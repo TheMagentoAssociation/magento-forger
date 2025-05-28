@@ -7,7 +7,7 @@
     <title>{{ $title ?? 'GitHub Stats' }}</title>
     <meta name="description" content="GitHub PR & Issue Statistics Viewer">
     <link rel="icon" href="{{ asset('favicon.ico') }}">
-    @vite('resources/css/app.css') {{-- Tailwind CSS --}}
+    @vite('resources/sass/app.scss', 'resources/js/app.js') {{-- Tailwind CSS --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @stack('head')
 </head>
