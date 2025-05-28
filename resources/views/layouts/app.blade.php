@@ -12,7 +12,7 @@
     @stack('head')
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-primary bg-primary">
     <div class="container">
         <a class="navbar-brand" href="#">Magento Forger</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
