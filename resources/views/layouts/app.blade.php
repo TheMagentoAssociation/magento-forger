@@ -9,6 +9,10 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     @vite('resources/sass/app.scss', 'resources/js/app.js') {{-- Tailwind CSS --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
     @stack('head')
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col">
