@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1299 276">
+  <!-- Generator: Adobe Illustrator 29.0.0, SVG Export Plug-In . SVG Version: 2.1.0 Build 186)  -->
+  <defs>
+    <style>
+      .st0 {
+        font-family: Roboto-Light, Roboto;
+        font-weight: 300;
+      }
+
+      .st1 {
+        font-size: 161.82px;
+      }
+
+      .st2 {
+        font-family: Roboto-Medium, Roboto;
+        font-weight: 500;
+      }
+
+      .st3 {
+        fill: #ee6524;
+      }
+    </style>
+  </defs>
+  <g id="Layer_3">
+    <g>
+      <polygon class="st3" points="122.56 23.22 23.06 80.65 23.06 195.35 51.46 211.78 51.25 97.03 122.35 56.01 193.43 97.03 193.43 211.73 221.83 195.35 221.83 80.55 122.56 23.22"/>
+      <polygon class="st3" points="136.65 211.75 122.46 219.99 108.19 211.83 108.19 97.03 79.81 113.43 79.86 228.18 122.43 252.78 165.05 228.18 165.05 113.43 136.65 97.03 136.65 211.75"/>
+    </g>
+  </g>
+  <text class="st1" transform="translate(235.89 195.52)"><tspan class="st0" x="0" y="0">Meet </tspan><tspan class="st2" x="398.56" y="0">Magento</tspan></text>
+</svg>

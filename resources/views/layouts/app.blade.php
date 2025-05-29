@@ -19,7 +19,10 @@
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col">
 <nav class="navbar navbar-expand-lg navbar-primary bg-primary">
     <div class="container">
-        <a class="navbar-brand" href="#">Magento Forger</a>
+        <a class="navbar-brand" href="/">
+            <img src="{{ asset('assets/logo_magento_soul_white.svg') }}" alt="Logo" width="24" height="24" class="d-inline-block align-text-top">
+            Magento Open Source Forger
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             {!! $mainMenu !!}
@@ -28,7 +31,7 @@
 </nav>
 @include('components.header')
 
-<main role="main" class="flex-grow container mx-auto px-4 py-6 transition-all duration-300 ease-in-out">
+<main role="main" class="flex-grow container mx-auto pt-4 px-4 py-6 transition-all duration-300 ease-in-out">
     @yield('content')
 </main>
 
