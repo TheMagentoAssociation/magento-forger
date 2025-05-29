@@ -12,7 +12,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
+    <!-- Put in here because laravel stinks and nothing works as documented and frontend people are morons in general that just overcomplicate things for no reason -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @stack('head')
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col">
@@ -21,10 +22,7 @@
         <a class="navbar-brand" href="#">Magento Forger</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link {{ Route::is('home') ? 'active' : ''}}" href="/">Home</a></li>
-                <li class="nav-item"><a class="nav-link {{ Route::is('issuesByMonth') ? 'active' : ''}}" href="{{route('issuesByMonth')}}">Issues By Month</a></li>
-            </ul>
+            {!! $mainMenu !!}
         </div>
     </div>
 </nav>
