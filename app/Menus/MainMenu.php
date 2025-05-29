@@ -1,6 +1,7 @@
 <?php
 namespace App\Menus;
 
+use App\Helpers\RouteLabelHelper;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Request;
 use Spatie\Menu\Laravel\Menu;
@@ -77,7 +78,6 @@ class MainMenu
 
     private static function formatLabel(string $routeName): string
     {
-        [, $labelPart] = explode('-', $routeName, 2);
-        return ucwords(preg_replace('/([a-z])([A-Z])/', '$1 $2', $labelPart));
+        return RouteLabelHelper::formatLabel($routeName);
     }
 }

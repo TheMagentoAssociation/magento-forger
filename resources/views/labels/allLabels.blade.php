@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-    <h2 class="text-3xl font-light mb-6 text-center">Grouped Labels</h2>
     <div class="row">
         @php $columnCount = 0; @endphp
 

@@ -5,7 +5,6 @@
         $currentYear = date('Y');
         $currentMonth = date('m');
     @endphp
-    <h2 class="text-3xl font-light mb-6 text-center">PRs without a component label</h2>
     <div class="container">
         @foreach($issues as $year)
             <div class="row">

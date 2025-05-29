@@ -1,6 +1,7 @@
 <?php
 
 return [
-    App\Providers\OpenSearchServiceProvider::class,
     App\Providers\AppServiceProvider::class,
+    App\Providers\HelperServiceProvider::class,
+    App\Providers\OpenSearchServiceProvider::class,
 ];
