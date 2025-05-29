@@ -17,7 +17,7 @@ class MainMenu
         $routes = collect(Route::getRoutes())
             ->map(fn($route) => $route->getName())
             ->filter()
-            ->filter(fn($name) => !empty($name) && preg_match('/^(home|issues|labels)(-[\w]+)?$/', $name));
+            ->filter(fn($name) => !empty($name) && preg_match('/^(home|issues|prs|labels)(-[\w]+)?$/', $name));
 
         $menu = Menu::new()
             ->addClass('navbar-nav me-auto mb-2 mb-lg-0')
