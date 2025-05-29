@@ -134,6 +134,6 @@ class LabelController extends Controller
                 $dataToDisplay[$yearBucket['key_as_string']]['months'][$monthBucket['key_as_string']]['end'] = $lastOfMonth->format('Y-m-d\TH:i:s\Z');
             }
         }
-        return view('labels/prsWithoutComponentLabel', ['issues' => $dataToDisplay]);
+        return view('labels/prsWithoutComponentLabel', ['prs' => $dataToDisplay]);
     }
 }

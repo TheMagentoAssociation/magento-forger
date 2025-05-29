@@ -6,10 +6,10 @@
         $currentMonth = date('m');
     @endphp
     <div class="container">
-        @foreach($issues as $year)
+        @foreach($prs as $year)
             <div class="row">
                 <div class="col-12">
-                    <h3>{{ $year['year']  }} <span class="text-secondary">({{ $year['total'] }} Issues)</span> </h3>
+                    <h3>{{ $year['year']  }} <span class="text-secondary">({{ $year['total'] }} PRs)</span> </h3>
                 </div>
                 @foreach($year['months'] as $month)
                     @if (!($year['year'] == $currentYear && $month['month_number'] > $currentMonth))
@@ -22,7 +22,7 @@
                                     @endphp
                                     <a href="{{ $githubUrl }}" target="magentoForgerGitHub">
                                         @endif
-                                        {{ $month['total'] }}&nbsp;Issues
+                                        {{ $month['total'] }}&nbsp;PRs
                                         @if ($month['total'] > 0)
                                     </a>
                                 @endif
