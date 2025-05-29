@@ -3,7 +3,6 @@ namespace App\Menus;
 
 use App\Helpers\RouteLabelHelper;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Request;
 use Spatie\Menu\Laravel\Menu;
 use Spatie\Menu\Laravel\Html;
 use Spatie\Menu\Laravel\Link;
@@ -32,7 +31,7 @@ class MainMenu
             if ($mainRouteExists && $childRoutes->isEmpty()) {
                 // Single item, no submenu
                 $menu->add(
-                    Link::toRoute($mainItem, ucfirst($mainItem))
+                    Link::toRoute($mainItem, self::formatLabel($mainItem))
                         ->addClass('nav-link')
                         ->addParentClass('nav-item')
                 );
@@ -63,7 +62,7 @@ class MainMenu
     </li>',
                         $isActive,             // %1$s
                         $mainItem,             // %2$s
-                        ucfirst($mainItem),    // %3$s
+                        self::formatLabel($mainItem),    // %3$s
                         $mainItem,             // %4$s again for aria-labelledby
                         $submenuItems          // %5$s
                     );
