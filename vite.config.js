@@ -23,4 +23,7 @@ export default defineConfig({
             origin: /https?:\/\/([A-Za-z0-9\-\.]+)?(\.ddev\.site)(?::\d+)?$/,
         },
     },
+    build: {
+        manifest: true,
+    },
 });
