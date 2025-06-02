@@ -57,5 +57,11 @@
             'Issues Opened', issueOpenedData, 'rgba(153, 102, 255, 0.6)',
             'Issues Closed', issueClosedData, 'rgba(255, 159, 64, 0.6)'
         );
+        fetch('/api/charts/prAgeOverTime')
+            .then(res => res.json())
+            .then(config => {
+                const ctx = document.getElementById('prAgeOverTime').getContext('2d');
+                new Chart(ctx, config);
+            });
     });
 </script>
