@@ -178,6 +178,18 @@ For production, you should set up a cron job to run the Laravel scheduler:
 * * * * * cd /path/to/your/project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
+## Magic Explained
+
+### Charts API
+
+If you call /api/charts/foo, the method `foo` within `app/Http/Controllers/ChartController.php` will be called.
+
+It is expected that this method returns a fullblown chart JSON for chart.js
+
+### Navigation
+In order to get your Route auto-linked into the main navigation, give your route a name.
+If you want to create a submenu, prefix your route name with the name of the main menu item and separate by `-`.
+
 ## Development
 
 ### Running Tests

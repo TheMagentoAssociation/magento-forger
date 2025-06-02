@@ -2,7 +2,15 @@
 
 @section('content')
     <h2 class="text-3xl font-semibold mb-6 text-center">Monthly GitHub Stats</h2>
-
+    <section class="mb12">
+        <div class="container">
+            <div class="row">
+                <div class="col-6">
+                    <canvas id="prAgeOverTime" class="w-full h-60"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
     <section class="mb-12">
         <h3 class="text-xl font-medium mb-3 text-blue-700">Pull Requests Over Time</h3>
         <div class="bg-white p-4 shadow rounded-xl">
