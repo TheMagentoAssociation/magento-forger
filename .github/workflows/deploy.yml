@@ -1,0 +1,72 @@
+name: Build and Deploy Laravel App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, xml, ctype, fileinfo, openssl, tokenizer, pdo, curl
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Laravel cache config/routes/views
+        run: |
+          cp .env.example .env
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Archive built app
+        run: |
+          mkdir -p deployment
+          rsync -a --exclude=".git" --exclude="tests" ./ deployment/laravel-app/
+          cd deployment
+          tar -czf laravel-release.tar.gz laravel-app
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Upload and deploy to timestamped release
+        run: |
+          TIMESTAMP=$(date +%s)
+          scp deployment/laravel-release.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/
+
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            set -e
+
+            echo "Creating release directory: \$TIMESTAMP"
+            RELEASE_DIR="/var/www/laravel/releases/\$TIMESTAMP"
+            mkdir -p \$RELEASE_DIR
+
+            echo "Extracting application..."
+            tar -xzf /tmp/laravel-release.tar.gz -C \$RELEASE_DIR
+            mv \$RELEASE_DIR/laravel-app/* \$RELEASE_DIR/
+            rm -rf \$RELEASE_DIR/laravel-app
+
+            echo "Setting permissions..."
+            chown -R www-data:www-data \$RELEASE_DIR
+            chmod -R 775 \$RELEASE_DIR/storage \$RELEASE_DIR/bootstrap/cache
+
+            echo "Updating current symlink..."
+            ln -sfn \$RELEASE_DIR /var/www/laravel/current
+
+            echo "Restarting services..."
+            systemctl reload php8.2-fpm || true
+            systemctl reload nginx || true
+
+            echo "Deployment complete to \$RELEASE_DIR"
