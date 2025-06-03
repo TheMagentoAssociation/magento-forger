@@ -20,6 +20,7 @@ class MainMenu
 
         $menu = Menu::new()
             ->addClass('navbar-nav me-auto mb-2 mb-lg-0')
+            ->setActiveClassOnLink()
             ->setActiveFromRequest();
 
         $grouped = $routes->groupBy(fn($name) => explode('-', $name)[0]);
@@ -40,8 +41,10 @@ class MainMenu
                 $submenuItems = '';
                 foreach ($childRoutes as $child) {
                     $label = self::formatLabel($child);
+                    $isActive = ($child === $currentRoute) ? ' active' : '';
                     $submenuItems .= sprintf(
-                        '<li><a class="dropdown-item" href="%s">%s</a></li>',
+                        '<li><a class="dropdown-item%s" href="%s">%s</a></li>',
+                        $isActive,
                         route($child),
                         $label
                     );
@@ -52,8 +55,8 @@ class MainMenu
                     $isActive = $childRoutes->contains($currentRoute) ? ' active' : '';
 
                     $dropdownHtml = sprintf(
-                        '<li class="nav-item dropdown%s">
-        <a class="nav-link dropdown-toggle" href="#" id="dropdown-%s" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        '<li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle%s" href="#" id="dropdown-%s" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             %s
         </a>
         <ul class="dropdown-menu" aria-labelledby="dropdown-%s">
