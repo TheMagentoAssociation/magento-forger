@@ -137,4 +137,49 @@ class OpenSearchService
     {
         return self::getIndexPrefix() . $index;
     }
+
+    /**
+     * Bulk index any documents with a SHA1 hash of the document as its ID.
+     *
+     * @param string $index
+     * @param array $documents
+     */
+    public function indexBulk(string $index, array $documents): void
+    {
+        if (empty($documents)) {
+            return;
+        }
+
+        $indexName = $this->indexPrefix . $index;
+        $body = [];
+
+        foreach ($documents as $doc) {
+            try {
+                $docJson = json_encode($doc, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+                $docId = sha1($docJson);
+
+                $body[] = [
+                    'index' => [
+                        '_index' => $indexName,
+                        '_id' => $docId,
+                    ],
+                ];
+                $body[] = $doc;
+            } catch (\Throwable $e) {
+                Log::warning('Skipping document due to encoding/hash error', [
+                    'exception' => $e,
+                    'document' => $doc,
+                ]);
+            }
+        }
+
+        try {
+            $this->client->bulk(['body' => $body]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to bulk index documents to OpenSearch', [
+                'index' => $indexName,
+                'exception' => $e,
+            ]);
+        }
+    }
 }
