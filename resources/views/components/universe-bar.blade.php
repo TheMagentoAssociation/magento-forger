@@ -32,13 +32,13 @@
         .magento-opensource-universe-bar-intro {
             display: none;
         }
-        
+
         /* Mobile dropdown as bottom sheet */
         #magento-opensource-universe-bar-mainnav li ul,
         #magento-opensource-universe-bar-mainnav li ul.magento-opensource-universe-bar-subnav {
             display: none !important;
         }
-        
+
         .mobile-dropdown-overlay {
             position: fixed;
             top: 0;
@@ -49,7 +49,7 @@
             z-index: 9999;
             display: none;
         }
-        
+
         /* Hide mobile overlay and content on desktop */
         @media (min-width: 768px) {
             .mobile-dropdown-overlay,
@@ -57,11 +57,11 @@
                 display: none !important;
             }
         }
-        
+
         .mobile-dropdown-overlay.active {
             display: block;
         }
-        
+
         .mobile-dropdown-content {
             position: fixed;
             bottom: 0;
@@ -75,12 +75,12 @@
             transition: transform 0.3s ease;
             display: none;
         }
-        
+
         .mobile-dropdown-overlay.active .mobile-dropdown-content {
             transform: translateY(0);
             display: block;
         }
-        
+
         .mobile-dropdown-header {
             display: flex;
             justify-content: space-between;
@@ -89,13 +89,13 @@
             padding-bottom: 0.5rem;
             border-bottom: 1px solid #555;
         }
-        
+
         .mobile-dropdown-header h3 {
             color: #fff;
             margin: 0;
             font-size: 1.1rem;
         }
-        
+
         .mobile-dropdown-close {
             background: none;
             border: none;
@@ -104,13 +104,13 @@
             cursor: pointer;
             padding: 0;
         }
-        
+
         .mobile-dropdown-links {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
-        
+
         .mobile-dropdown-links a {
             color: #bbbbbb;
             text-decoration: none;
@@ -121,7 +121,7 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .mobile-dropdown-links a:hover {
             background-color: #555;
             color: #fff;
@@ -156,7 +156,7 @@
     #magento-opensource-universe-bar-mainnav li:hover ul {
         display: block;
     }
-    
+
     #magento-opensource-universe-bar-mainnav li.active ul {
         display: block;
     }
@@ -183,7 +183,7 @@
             overflow-x: auto;
             white-space: nowrap;
         }
-        
+
         #magento-opensource-universe-bar-mainnav li {
             position: relative;
         }
@@ -315,7 +315,7 @@
 function toggleMobileDropdown(event, element) {
     event.preventDefault();
     event.stopPropagation();
-    
+
     // Check if we're on mobile (screen width < 768px)
     if (window.innerWidth < 768) {
         openMobileDropdown();
