@@ -17,6 +17,7 @@
     @stack('head')
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col">
+@include('components.universe-bar')
 <nav class="navbar navbar-expand-lg navbar-primary bg-primary" data-bs-theme="dark">
     <div class="container">
         <a class="navbar-brand fs-5" href="/">
