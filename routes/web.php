@@ -18,3 +18,13 @@ Route::middleware(['auth'])->group(function () {
 // Github Social Login
 Route::get('/auth/github', [\App\Http\Controllers\Auth\LoginController::class, 'redirectToGitHub'])->name('github_login');
 Route::get('/auth/github/callback', [\App\Http\Controllers\Auth\LoginController::class, 'handleGitHubCallback']);
+
+// Render employment form
+Route::middleware('auth')->group(function () {
+    Route::get('/employment', [\App\Http\Controllers\EmploymentController::class, 'create'])->name('employment');
+    Route::post('/employment', [\App\Http\Controllers\EmploymentController::class, 'store']);
+    Route::get('/employment/{id}/edit', [\App\Http\Controllers\EmploymentController::class, 'edit'])->name('employment.edit');
+    Route::put('/employment/{id}', [\App\Http\Controllers\EmploymentController::class, 'update'])->name('employment.update');
+    Route::delete('/employment/{id}', [\App\Http\Controllers\EmploymentController::class, 'destroy'])->name('employment.destroy');
+});
+

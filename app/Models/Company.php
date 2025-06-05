@@ -21,4 +21,9 @@ class Company extends Model
         'country_code',
         'logo',
     ];
+
+    public function affiliations()
+    {
+        return $this->hasMany(\App\Models\CompanyAffiliation::class);
+    }
 }
