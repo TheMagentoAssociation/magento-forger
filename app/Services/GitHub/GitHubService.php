@@ -256,6 +256,83 @@ class GitHubService
         return $interactions;
     }
 
+    public function fetchIssuesPaged(string $owner, string $repo, ?string $cursor = null): array
+    {
+        $query = <<<'GRAPHQL'
+    query($owner: String!, $name: String!, $cursor: String) {
+        repository(owner: $owner, name: $name) {
+            issues(first: 100, after: $cursor, orderBy: { field: UPDATED_AT, direction: DESC }) {
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+                nodes {
+                    number
+                    title
+                    url
+                    updatedAt
+                    createdAt
+                    author { login }
+                }
+            }
+        }
+    }
+    GRAPHQL;
+
+        $variables = [
+            'owner' => $owner,
+            'name' => $repo,
+            'cursor' => $cursor,
+        ];
+
+        $data = $this->executeGraphQLQuery($query, $variables);
+
+        $issues = $data['repository']['issues']['nodes'] ?? [];
+        $pageInfo = $data['repository']['issues']['pageInfo'] ?? [];
+
+        return [
+            'issues' => $issues,
+            'endCursor' => $pageInfo['endCursor'] ?? null,
+            'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
+        ];
+    }
+
+    public function fetchEventsForIssue(string $owner, string $repo, int $number): array
+    {
+        $restClient = new \GuzzleHttp\Client([
+            'base_uri' => 'https://api.github.com/',
+            'headers' => [
+                'Authorization' => "Bearer {$this->token}",
+                'Accept' => 'application/vnd.github.v3+json',
+                'User-Agent' => 'Laravel-GitHubSync/1.0',
+            ],
+        ]);
+
+        $events = [];
+        $url = "repos/$owner/$repo/issues/$number/timeline";
+
+        try {
+            $response = $restClient->get($url);
+            $raw = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+
+            foreach ($raw as $event) {
+                if (!isset($event['event'], $event['created_at'])) {
+                    continue;
+                }
+
+                $events[] = [
+                    'type' => $event['event'],
+                    'actor' => $event['actor']['login'] ?? 'unknown',
+                    'created_at' => $event['created_at'],
+                ];
+            }
+        } catch (\Throwable $e) {
+            \Log::error("Failed to fetch events for issue #$number", ['exception' => $e]);
+        }
+
+        return $events;
+    }
+
     public function getRateLimit(): array
     {
         $restClient = new Client([

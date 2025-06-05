@@ -182,4 +182,23 @@ class OpenSearchService
             ]);
         }
     }
+    public function indexDocument(string $index, array $document): void
+    {
+        try {
+            $json = json_encode($document, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+            $id = sha1($json);
+
+            $this->client->index([
+                'index' => $this->indexPrefix . $index,
+                'id' => $id,
+                'body' => $document,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error("OpenSearch indexing failed", [
+                'index' => $index,
+                'document' => $document,
+                'exception' => $e,
+            ]);
+        }
+    }
 }
