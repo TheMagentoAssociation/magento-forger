@@ -51,6 +51,11 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    public function affiliations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\CompanyAffiliation::class);
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->getAttribute('is_admin');
