@@ -27,6 +27,16 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             {!! $mainMenu !!}
         </div>
+        <div class="">
+            @auth
+                {{ Auth::user()->name }} ({{ Auth::user()->github_username }})
+            @endauth
+
+            @guest
+                    <a href="{{ route('github_login') }}">Login with GitHub</a>
+            @endguest
+
+        </div>
     </div>
 </nav>
 @include('components.header')
