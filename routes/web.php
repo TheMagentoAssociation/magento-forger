@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Controllers\ChartController;
-use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers as Controllers;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
@@ -19,6 +18,7 @@ Route::middleware(['auth'])->group(function () {
 // Github Social Login
 Route::get('/auth/github', [\App\Http\Controllers\Auth\LoginController::class, 'redirectToGitHub'])->name('github_login');
 Route::get('/auth/github/callback', [\App\Http\Controllers\Auth\LoginController::class, 'handleGitHubCallback']);
+Route::get('/api/universe-bar', [Controllers\UniverseBarController::class, 'render']);
 
 // Render employment form
 Route::middleware('auth')->group(function () {
