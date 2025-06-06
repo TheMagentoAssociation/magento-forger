@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin Builder
+ */
 class Company extends Model
 {
     protected $fillable = [
@@ -22,7 +26,7 @@ class Company extends Model
         'logo',
     ];
 
-    public function affiliations()
+    public function affiliations(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(\App\Models\CompanyAffiliation::class);
     }
