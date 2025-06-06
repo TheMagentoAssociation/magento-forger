@@ -12,7 +12,7 @@ class ClearOpenSearchIndex extends Command
      *
      * @var string
      */
-    protected $signature = 'os:clear-index';
+    protected $signature = 'opensearch:clear-index';
 
     /**
      * The console command description.

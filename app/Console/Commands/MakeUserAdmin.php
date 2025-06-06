@@ -18,7 +18,7 @@ class MakeUserAdmin extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Makes a user that logged in via GitHub an admin locally';
 
     /**
      * Execute the console command.
@@ -26,6 +26,10 @@ class MakeUserAdmin extends Command
     public function handle()
     {
         $email = $this->ask('User email');
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->error('Please enter a valid email address.');
+            return Command::FAILURE;
+        }
         $user = \App\Models\User::where('email', $email)->first();
 
         if (!$user) {
