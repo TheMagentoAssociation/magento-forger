@@ -4,7 +4,6 @@ use App\Http\Controllers as Controllers;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/api/charts/{method}', [ChartController::class, 'dispatch']);
 Route::get('/', [Controllers\WelcomeController::class, 'index'])->name('home');
 Route::get('issuesByMonth', [Controllers\IssuesByMonthController::class, 'index'])->name('issues-issuesByMonth');
 Route::get('prsByMonth', [Controllers\PrsByMonthController::class, 'index'])->name('prs-PRsByMonth');
