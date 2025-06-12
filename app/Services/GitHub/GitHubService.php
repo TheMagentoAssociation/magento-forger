@@ -164,4 +164,38 @@ class GitHubService
 
         return $data['repository']['issues'] ?? [];
     }
+
+    /**
+     * Fetch all repository labels using GraphQL
+     *
+     * @throws GitHubGraphQLException
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function fetchRepositoryLabels(string $owner, string $repo): array
+    {
+        $query = file_get_contents(resource_path('graphql/github/github_labels.graphql'));
+
+        $labels = [];
+        $cursor = null;
+
+        do {
+            $data = $this->executeGraphQLQuery($query, [
+                'owner' => $owner,
+                'repo' => $repo,
+                'cursor' => $cursor,
+            ]);
+
+            $response = $data['repository']['labels'] ?? [];
+            $nodes = $response['nodes'] ?? [];
+
+            $labels = array_merge($labels, $nodes);
+
+            $cursor = $response['pageInfo']['endCursor'] ?? null;
+            $hasNextPage = $response['pageInfo']['hasNextPage'] ?? false;
+
+        } while ($hasNextPage);
+
+        return $labels;
+    }
 }

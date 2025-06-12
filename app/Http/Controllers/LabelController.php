@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\GitHub\GitHubService;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -9,10 +10,21 @@ use OpenSearch\Client;
 
 class LabelController extends Controller
 {
-    public function listAllLabels(Client $client): view
+    public function listAllLabels(Client $client, GitHubService $github): view
     {
+        // Get repository configuration
+        $repo = config('github.repo');
+        if (!$repo || !str_contains($repo, '/')) {
+            throw new \RuntimeException('Missing or invalid repository configuration');
+        }
+        [$owner, $name] = explode('/', $repo);
+
+        // Fetch all repository labels from GitHub REST API (includes unassigned labels)
+        $allRepositoryLabels = $github->fetchRepositoryLabels($owner, $name);
+
+        // Query both issues and pull requests indices for label usage counts
         $params = [
-            'index' => 'github-issues',
+            'index' => 'github-issues,github-pull-requests',
             'body'  => [
                 'size' => 0,
                 'query' => [
@@ -33,16 +45,24 @@ class LabelController extends Controller
                 ]
             ]
         ];
+
         $result = $client->search($params);
-        $nestedLabels = [];
         $buckets = $result['aggregations']['by_label']['buckets'];
 
+        // Create a map of label usage counts from OpenSearch
+        $labelCounts = [];
         foreach ($buckets as $bucket) {
-            $label = $bucket['key'];
-            $count = $bucket['doc_count'];
+            $labelCounts[$bucket['key']] = $bucket['doc_count'];
+        }
+
+        // Combine all repository labels with their usage counts
+        $nestedLabels = [];
+        foreach ($allRepositoryLabels as $repoLabel) {
+            $labelName = $repoLabel['name'];
+            $count = $labelCounts[$labelName] ?? 0; // 0 for unassigned labels
 
             // Split label into prefix and remainder
-            $parts = explode(':', $label, 2);
+            $parts = explode(':', $labelName, 2);
             $prefix = count($parts) > 1 ? trim($parts[0]) : 'no_prefix';
 
             // Initialize the prefix group if it doesn't exist
@@ -52,10 +72,18 @@ class LabelController extends Controller
 
             // Append the label and count under the prefix
             $nestedLabels[$prefix][] = [
-                'label' => $label,
+                'label' => $labelName,
                 'count' => $count
             ];
         }
+
+        // Sort each prefix group by label name
+        foreach ($nestedLabels as $prefix => $labelGroup) {
+            usort($nestedLabels[$prefix], function($a, $b) {
+                return strcmp($a['label'], $b['label']);
+            });
+        }
+
         ksort($nestedLabels);
         return view('labels/allLabels', ['labels' => $nestedLabels]);
     }

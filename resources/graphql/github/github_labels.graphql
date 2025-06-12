@@ -1,0 +1,20 @@
+query($owner: String!, $repo: String!, $cursor: String) {
+  rateLimit {
+    remaining
+    resetAt
+  }
+  repository(owner: $owner, name: $repo) {
+    labels(first: 100, after: $cursor, orderBy: {field: NAME, direction: ASC}) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        id
+        name
+        description
+        color
+      }
+    }
+  }
+}
