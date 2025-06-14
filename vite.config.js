@@ -3,7 +3,9 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 const port = 5173;
-const origin = `${process.env.DDEV_PRIMARY_URL}:${port}`;
+const ddevUrl = process.env.DDEV_PRIMARY_URL || ''
+const origin = ddevUrl ? `${ddevUrl}:${port}` : null;
+
 
 export default defineConfig({
     plugins: [
@@ -13,7 +15,7 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
-    server: {
+    server: ddevUrl ? {
         // Respond to all network requests
         host: "0.0.0.0",
         port: 5173,
@@ -22,7 +24,7 @@ export default defineConfig({
         cors: {
             origin: /https?:\/\/([A-Za-z0-9\-\.]+)?(\.ddev\.site)(?::\d+)?$/,
         },
-    },
+    } : {},
     build: {
         manifest: true,
     },
