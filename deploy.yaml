@@ -50,7 +50,7 @@ tasks:
     #- jetrails:reload:php-fpm
 
   artifact:create:
-    - run_locally: 'tar --exclude=".git" --exclude=".ddev" --exclude=".env" --exclude=".env.sample" --exclude="node_modules" --exclude="storage/logs/*" --exclude="storage/framework/cache/*" --exclude="storage/framework/sessions/*" --exclude="storage/framework/views/*" --exclude=".gitignore" --exclude=".gitattributes" --exclude="README.md" --exclude="phpunit.xml" --exclude="tests" -czf /tmp/{{application}}-{{release_name}}.tar.gz .'
+    - run_locally: 'tar --exclude=".git" --exclude=".ddev" --exclude=".env" --exclude=".env.example" --exclude=".env.deploy" --exclude="node_modules" --exclude="storage/logs/*" --exclude="storage/framework/cache/*" --exclude="storage/framework/sessions/*" --exclude="storage/framework/views/*" --exclude=".gitignore" --exclude=".gitattributes" --exclude="README.md" --exclude="phpunit.xml" --exclude="tests" -czf /tmp/{{application}}-{{release_name}}.tar.gz .'
 
   artifact:upload:
     - upload:
@@ -67,10 +67,11 @@ tasks:
         else
         cp .env.deploy .env.production
         fi
+    - run_locally: |
         if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' '/^\\(SSHPASS\\|SSH_HOST\\|SSH_PORT\\|SSH_USER\\|SSH_PATH\\)/d' .env.production
+        sed -i '' '/^\(SSHPASS\|SSH_HOST\|SSH_PORT\|SSH_USER\|SSH_PATH\)/d' .env.production
         else
-        sed -i '/^\\(SSHPASS\\|SSH_HOST\\|SSH_PORT\\|SSH_USER\\|SSH_PATH\\)/d' .env.production
+        sed -i '/^\(SSHPASS\|SSH_HOST\|SSH_PORT\|SSH_USER\|SSH_PATH\)/d' .env.production
         fi
     # on a docker env you would use below as the envs are set on the container
     #- run: 'envsubst < {{release_path}}/env.template > {{release_path}}/.env'
