@@ -6,6 +6,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+.secrets
 .env
 .env.backup
 .env.deploy

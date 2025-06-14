@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
     echo "Running in GitHub Actions - using environment variables from secrets"
