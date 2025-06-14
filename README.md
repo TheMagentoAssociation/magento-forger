@@ -248,8 +248,11 @@ However we can deploy from **local** if required.
 * `sshpass`  - `brew install sshpass` or `apt update && apt install sshpass`
 
 ### Prerequired software
-* PHP 8.2 active
+* PHP 8.2
 * Node v18
+
+### Optional Tools
+* `act` Github Actions Locally - `brew install act` or `curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash`
 
 ### Execute a deploy
 1. `cp .env.template .env.deploy`
@@ -262,7 +265,7 @@ However we can deploy from **local** if required.
     SSHPASS=...
     ```
 3. Update `.env.deploy` with correct credentials from your host for production
-4. `bash ./deploy.sh`
+4. `bash ./deploy.sh` or `act --container-architecture linux/amd64 --secret-file .env.deploy -j build-and-deploy -W .github/workflows/deploy.yml`
 
 ## Troubleshooting
 
