@@ -236,6 +236,34 @@ curl http://opensearch:9200/_cat/indices
 ddev composer dev
 ```
 
+## Deploying
+The main way to deploy this project will be through our GHA which will run on _merge to main_ or via _workflow dispatch_. 
+However we can deploy from **local** if required.
+
+**Please Note:** the required tools are needed for the deployment process to work, the required software is required to ensure you do not upload a broken package. Improvements may be made in future to use the `ddev` to avoid that issue
+
+### Prerequired Tools
+* `composer`
+* `deployer` - `composer global require deployer/deployer`
+* `sshpass`  - `brew install sshpass` or `apt update && apt install sshpass`
+
+### Prerequired software
+* PHP 8.2 active
+* Node v18
+
+### Execute a deploy
+1. `cp .env.template .env.deploy`
+2. Add to the bottom of `.env.deploy` (This will only be used by deployer, they will be ripped out before deploying)
+    ```
+    SSH_HOST=...
+    SSH_PORT=...
+    SSH_USER=...
+    SSH_PATH=...
+    SSHPASS=...
+    ```
+3. Update `.env.deploy` with correct credentials from your host for production
+4. `bash ./deploy.sh`
+
 ## Troubleshooting
 
 ### Common Issues
