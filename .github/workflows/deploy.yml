@@ -44,7 +44,8 @@ jobs:
           ./deploy.sh
         env:
           GITHUB_ACTIONS: true
-          ## To be fleshed out once host gives details
+          APP_ENV: production
+          APP_NAME: ${{ vars.APP_NAME }}
           APP_URL: ${{ vars.APP_URL }}
           APP_KEY: ${{ secrets.APP_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -55,4 +56,8 @@ jobs:
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          REDIS_USERNAME: ${{ secrets.REDIS_USERNAME }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          OPENSEARCH_USERNAME: ${{ secrets.OPENSEARCH_USERNAME }}
+          OPENSEARCH_PASSWORD: ${{ secrets.OPENSEARCH_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GH_APP_TOKEN }}
