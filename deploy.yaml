@@ -38,6 +38,7 @@ tasks:
     - artifact:extract
     - env:copy
     - deploy:env
+    - artisan:config:clear
     - deploy:shared
     - deploy:writable
     - artisan:storage:link
