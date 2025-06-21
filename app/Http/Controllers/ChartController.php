@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Search\OpenSearchService;
 use Illuminate\Http\Request;
 use OpenSearch\Client;
 use OpenSearch\ClientBuilder;
@@ -22,7 +23,7 @@ class ChartController extends Controller
     public function prAgeOverTime(Request $request, Client $client)
     {
         $params = [
-            'index' => 'github-pull-requests',
+            'index' => OpenSearchService::getIndexWithPrefix(OpenSearchService::OPENSEARCH_GITHUB_PULL_REQUESTS_INDEX),
             'body'  => [
                 'size' => 0,
                 'query' => [

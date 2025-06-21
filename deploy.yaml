@@ -1,0 +1,89 @@
+import:
+  - deployer-hosts.php
+  - recipe/deploy/shared.php
+  - recipe/laravel.php
+  - contrib/php-fpm.php
+  - contrib/npm.php
+
+config:
+  repository: 'git@github.com:TheMagentoAssociation/magento-forger.git'
+  application: 'forger.magento-opensource.com'
+  php_fpm_version: '8.2'
+  shared_dirs:
+    - storage/app
+    - storage/logs
+    - storage/framework/sessions
+  shared_files:
+    - .env
+
+tasks:
+  forger:deploy:
+    - forger:build
+    - env:create
+    - artifact:create
+    - forger:release
+    - deploy:cleanup
+    - forger:cleanup-local
+
+  forger:build:
+    - run_locally: "composer install --no-dev --optimize-autoloader"
+    - run_locally: "npm install"
+    - run_locally: "npm run build"
+    - run_locally: "rm -rf public/hot"
+
+  forger:release:
+    - deploy:setup
+    - deploy:release
+    - artifact:upload
+    - artifact:extract
+    - env:copy
+    - deploy:env
+    - artisan:config:clear
+    - deploy:shared
+    - deploy:writable
+    - artisan:storage:link
+    - artisan:config:cache
+    - artisan:view:cache
+    - artisan:down
+    - artisan:migrate
+    - artisan:up
+    - deploy:symlink
+
+  artifact:create:
+    - run_locally: 'tar --exclude=".idea" --exclude=".vscode" --exclude=".secrets" --exclude=".git" --exclude=".ddev" --exclude=".env" --exclude=".env.example" --exclude=".env.deploy" --exclude="node_modules" --exclude="storage/logs/*" --exclude="storage/framework/cache/*" --exclude="storage/framework/sessions/*" --exclude="storage/framework/views/*" --exclude=".gitignore" --exclude=".gitattributes" --exclude="README.md" --exclude="phpunit.xml" --exclude="tests" -czf /tmp/{{application}}-{{release_name}}.tar.gz .'
+
+  artifact:upload:
+    - upload:
+        src: /tmp/{{application}}-{{release_name}}.tar.gz
+        dest: "{{release_path}}/"
+
+  artifact:extract:
+    - run: 'cd {{release_path}} && tar -xzf {{application}}-{{release_name}}.tar.gz && rm {{application}}-{{release_name}}.tar.gz'
+
+  env:create:
+    - run_locally: |
+        if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
+        envsubst < .env.template > .env.production
+        else
+        cp .env.deploy .env.production
+        fi
+    - run_locally: |
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' '/^\(SSHPASS\|SSH_HOST\|SSH_PORT\|SSH_USER\|SSH_PATH\)/d' .env.production
+        else
+        sed -i '/^\(SSHPASS\|SSH_HOST\|SSH_PORT\|SSH_USER\|SSH_PATH\)/d' .env.production
+        fi
+
+  env:copy:
+    - run: 'cp {{release_path}}/.env.production {{release_path}}/.env'
+    - run: 'rm -f {{release_path}}/.env.production'
+
+  forger:cleanup-local:
+    - run_locally: "rm -f /tmp/{{application}}-{{release_name}}.tar.gz"
+
+  jetrails:reload:php-fpm:
+    - run_locally: 'jrctl service restart php{{php_fpm_version}}-fpm'
+
+after:
+  deploy:failed: deploy:unlock
+

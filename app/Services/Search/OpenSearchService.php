@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Log;
 
 class OpenSearchService
 {
+    public const OPENSEARCH_GITHUB_PULL_REQUESTS_INDEX = 'github-pull-requests';
+    public const OPENSEARCH_GITHUB_ISSUES_INDEX = 'github-issues';
+
     protected Client $client;
     protected string $indexPrefix;
 
@@ -19,25 +22,28 @@ class OpenSearchService
     public function search(string $index, array $body): array
     {
         return $this->client->search([
-            'index' => $this->indexPrefix . $index,
+            'index' => $index,
             'body' => $body,
         ]);
     }
 
     public function searchPRs(QueryBuilder $builder): array
     {
-        return $this->searchIndex('github-pull-requests', $builder);
+        $prIndex = self::getIndexWithPrefix(self::OPENSEARCH_GITHUB_PULL_REQUESTS_INDEX);
+        return $this->searchIndex($prIndex, $builder);
     }
 
     public function searchIssues(QueryBuilder $builder): array
     {
-        return $this->searchIndex('github-issues', $builder);
+        $issueIndex = self::getIndexWithPrefix(self::OPENSEARCH_GITHUB_ISSUES_INDEX);
+
+        return $this->searchIndex($issueIndex, $builder);
     }
 
     public function searchIndex(string $index, QueryBuilder $builder): array
     {
         return $this->client->search([
-            'index' => $this->indexPrefix . $index,
+            'index' => $index,
             'body' => $builder->build(),
         ]);
     }
@@ -47,8 +53,7 @@ class OpenSearchService
         if (empty($pullRequests)) {
             return;
         }
-
-        $indexName = $this->indexPrefix . 'github-pull-requests';
+        $indexName = self::getIndexWithPrefix(self::OPENSEARCH_GITHUB_PULL_REQUESTS_INDEX);
 
         $body = [];
         foreach ($pullRequests as $pr) {
@@ -91,7 +96,7 @@ class OpenSearchService
             return;
         }
 
-        $indexName = $this->indexPrefix . 'github-issues';
+        $indexName = self::getIndexWithPrefix(self::OPENSEARCH_GITHUB_ISSUES_INDEX);
 
         $body = [];
         foreach ($issues as $issue) {
@@ -137,7 +142,7 @@ class OpenSearchService
             return;
         }
 
-        $indexName = $this->indexPrefix . $index;
+        $indexName = self::getIndexWithPrefix($index)
         $body = [];
 
         foreach ($documents as $doc) {
@@ -169,6 +174,7 @@ class OpenSearchService
             ]);
         }
     }
+
     public function indexDocument(string $index, array $document): void
     {
         try {
@@ -176,7 +182,7 @@ class OpenSearchService
             $id = sha1($json);
 
             $this->client->index([
-                'index' => $this->indexPrefix . $index,
+                'index' => self::getIndexWithPrefix($index),
                 'id' => $id,
                 'body' => $document,
             ]);
@@ -187,5 +193,15 @@ class OpenSearchService
                 'exception' => $e,
             ]);
         }
+    }
+
+    public static function getIndexPrefix(): string
+    {
+        return config('opensearch.index_prefix', '');
+    }
+
+    public static function getIndexWithPrefix(string $index): string
+    {
+        return self::getIndexPrefix() . $index;
     }
 }

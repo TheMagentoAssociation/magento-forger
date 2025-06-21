@@ -1,0 +1,63 @@
+name: Build and Deploy
+
+## disabled on push for now till able to whitelist GHAs
+on:
+  workflow_dispatch:
+#  push:
+#    branches:
+#      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, xml, ctype, fileinfo, openssl, tokenizer, pdo, curl, zip, json
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Add global composer bin to PATH
+        run: echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Install Deployer
+        run: composer global require deployer/deployer
+
+      - name: Install sshpass & envsubst
+        run: sudo apt-get update && sudo apt-get install -y sshpass gettext-base rsync
+
+      - name: Deploy application
+        run: |
+          echo -e "Host ${{ secrets.SSH_HOST }}\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" >> ~/.ssh/config
+          ./deploy.sh
+        env:
+          GITHUB_ACTIONS: true
+          APP_ENV: production
+          APP_NAME: ${{ vars.APP_NAME }}
+          APP_URL: ${{ vars.APP_URL }}
+          APP_KEY: ${{ secrets.APP_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PATH: ${{ secrets.SSH_PATH }}
+          SSHPASS: ${{ secrets.SSHPASS }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          REDIS_USERNAME: ${{ secrets.REDIS_USERNAME }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          OPENSEARCH_USERNAME: ${{ secrets.OPENSEARCH_USERNAME }}
+          OPENSEARCH_PASSWORD: ${{ secrets.OPENSEARCH_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GH_APP_TOKEN }}
