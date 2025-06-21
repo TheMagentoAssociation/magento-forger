@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Search\OpenSearchService;
 use DateTime;
 use Illuminate\View\View;
 use OpenSearch\Client;
@@ -12,7 +13,7 @@ class PrsByMonthController extends Controller
     {
         $dataToDisplay = [];
         $params = [
-            'index' => 'github-pull-requests',
+            'index' => OpenSearchService::getIndexWithPrefix(OpenSearchService::OPENSEARCH_GITHUB_ISSUES_INDEX),
             'body'  => [
                 'size' => 0,
                 'query' => [
