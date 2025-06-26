@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\GitHub\GitHubService;
 use DateTime;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 use OpenSearch\Client;
 
@@ -19,7 +18,7 @@ class LabelController extends Controller
         }
         [$owner, $name] = explode('/', $repo);
 
-        // Fetch all repository labels from GitHub REST API (includes unassigned labels)
+        // Fetch all repository labels from GitHub GraphQL API (includes unassigned labels)
         $allRepositoryLabels = $github->fetchRepositoryLabels($owner, $name);
 
         // Query both issues and pull requests indices for label usage counts
@@ -86,6 +85,91 @@ class LabelController extends Controller
 
         ksort($nestedLabels);
         return view('labels/allLabels', ['labels' => $nestedLabels]);
+    }
+
+    public function listAreaComponentLabels(Client $client, GitHubService $github): view
+    {
+        // Get repository configuration
+        $repo = config('github.repo');
+        if (!$repo || !str_contains($repo, '/')) {
+            throw new \RuntimeException('Missing or invalid repository configuration');
+        }
+        [$owner, $name] = explode('/', $repo);
+
+        // Fetch all repository labels from GitHub GraphQL API (includes unassigned labels)
+        $allRepositoryLabels = $github->fetchRepositoryLabels($owner, $name);
+
+        // Query both issues and pull requests indices for label usage counts
+        $params = [
+            'index' => 'github-issues,github-pull-requests',
+            'body'  => [
+                'size' => 0,
+                'query' => [
+                    'term' => [
+                        'is_open' => true
+                    ]
+                ],
+                'aggs' => [
+                    'by_label' => [
+                        'terms' => [
+                            'field' => 'labels.keyword',
+                            'order' => [
+                                '_key' => 'asc'  // sort alphabetically
+                            ],
+                            'size' => 1000  // adjust based on number of unique labels
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $result = $client->search($params);
+        $buckets = $result['aggregations']['by_label']['buckets'];
+
+        // Create a map of label usage counts from OpenSearch
+        $labelCounts = [];
+        foreach ($buckets as $bucket) {
+            $labelCounts[$bucket['key']] = $bucket['doc_count'];
+        }
+
+        // Combine all repository labels with their usage counts
+        // Filter to only include labels that start with "Area" or "Component"
+        $nestedLabels = [];
+        foreach ($allRepositoryLabels as $repoLabel) {
+            $labelName = $repoLabel['name'];
+
+            // Only include labels that start with "Area" or "Component"
+            if (!str_starts_with($labelName, 'Area') && !str_starts_with($labelName, 'Component')) {
+                continue;
+            }
+
+            $count = $labelCounts[$labelName] ?? 0; // 0 for unassigned labels
+
+            // Split label into prefix and remainder
+            $parts = explode(':', $labelName, 2);
+            $prefix = count($parts) > 1 ? trim($parts[0]) : 'no_prefix';
+
+            // Initialize the prefix group if it doesn't exist
+            if (!isset($nestedLabels[$prefix])) {
+                $nestedLabels[$prefix] = [];
+            }
+
+            // Append the label and count under the prefix
+            $nestedLabels[$prefix][] = [
+                'label' => $labelName,
+                'count' => $count
+            ];
+        }
+
+        // Sort each prefix group by label name
+        foreach ($nestedLabels as $prefix => $labelGroup) {
+            usort($nestedLabels[$prefix], function($a, $b) {
+                return strcmp($a['label'], $b['label']);
+            });
+        }
+
+        ksort($nestedLabels);
+        return view('labels/areaComponentLabels', ['labels' => $nestedLabels]);
     }
 
     public function listPrWithoutComponentLabel(Client $client): view
