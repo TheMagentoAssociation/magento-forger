@@ -5,7 +5,7 @@
     <section class="mb12">
         <div class="container">
             <div class="row">
-                <div class="col-6">
+                <div class="col-12">
                     <canvas id="prAgeOverTime" class="w-full h-60"></canvas>
                 </div>
             </div>

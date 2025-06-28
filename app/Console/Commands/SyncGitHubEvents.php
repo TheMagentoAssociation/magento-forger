@@ -68,7 +68,10 @@ class SyncGitHubEvents extends Command
 
                         #echo "#$issueNumber - {$event['actor']} - {$event['type']}\n";
 
-                        $openSearch->indexDocument('interactions', $document);
+                        $openSearch->indexDocument(
+                            OpenSearchService::getIndexWithPrefix('interactions'),
+                            $document
+                        );
                     }
                 } catch (Throwable $e) {
                     $this->warn("⚠️ Error on issue #$issueNumber: " . $e->getMessage());
