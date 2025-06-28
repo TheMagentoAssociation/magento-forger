@@ -3,6 +3,7 @@
 namespace App\Services\Search;
 
 use OpenSearch\Client;
+use Illuminate\Support\Facades\Log;
 
 class OpenSearchService
 {
@@ -182,6 +183,7 @@ class OpenSearchService
             ]);
         }
     }
+
     public function indexDocument(string $index, array $document): void
     {
         try {
@@ -189,12 +191,12 @@ class OpenSearchService
             $id = sha1($json);
 
             $this->client->index([
-                'index' => $this->indexPrefix . $index,
+                'index' => self::getIndexWithPrefix($index),
                 'id' => $id,
                 'body' => $document,
             ]);
         } catch (\Throwable $e) {
-            \Log::error("OpenSearch indexing failed", [
+            Log::error("OpenSearch indexing failed", [
                 'index' => $index,
                 'document' => $document,
                 'exception' => $e,
