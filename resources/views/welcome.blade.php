@@ -1,12 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
-    <h2 class="text-3xl font-semibold mb-6 text-center">Monthly GitHub Stats</h2>
+    <h2 class="text-3xl font-semibold mb-6 text-center">Global GitHub Stats</h2>
     <section class="mb12">
         <div class="container">
             <div class="row">
-                <div class="col-12">
+                <div class="col-6">
                     <canvas id="prAgeOverTime" class="w-full h-60"></canvas>
+                </div>
+                <div class="col-6">
+                    <canvas id="issueAgeOverTime" class="w-full h-60"></canvas>
                 </div>
             </div>
         </div>
