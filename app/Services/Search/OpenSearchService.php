@@ -142,7 +142,7 @@ class OpenSearchService
             return;
         }
 
-        $indexName = self::getIndexWithPrefix($index)
+        $indexName = self::getIndexWithPrefix($index);
         $body = [];
 
         foreach ($documents as $doc) {
