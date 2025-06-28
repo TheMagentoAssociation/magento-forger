@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Search\OpenSearchService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use OpenSearch\Client;
@@ -11,7 +12,7 @@ class LeaderboardController extends Controller
     public function index(Client $client): view
     {
         $params = [
-            'index' => 'points',
+            'index' => OpenSearchService::getIndexWithPrefix('points'),
             'body'  => [
                 'size' => 0,
                 'aggs' => [

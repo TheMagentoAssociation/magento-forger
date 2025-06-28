@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Search\OpenSearchService;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -63,7 +64,7 @@ class LabelController extends Controller
     public function listPrWithoutComponentLabel(Client $client): view
     {
         $params = [
-            'index' => 'github-pull-requests',
+            'index' => OpenSearchService::getIndexWithPrefix('github-pull-requests'),
             'body'  => [
                 'size' => 0,
                 'query' => [

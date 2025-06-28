@@ -137,52 +137,7 @@ class GitHubService
 
     public function fetchInteractionsForIssue(string $owner, string $repo, int $issueNumber): array
     {
-        $query = <<<'GRAPHQL'
-        query($owner: String!, $name: String!, $number: Int!) {
-            repository(owner: $owner, name: $name) {
-                issueOrPullRequest(number: $number) {
-                    __typename
-                    ... on Issue {
-                        author { login }
-                        createdAt
-                        comments(first: 100) {
-                            nodes {
-                                author { login }
-                                createdAt
-                            }
-                        }
-                        timelineItems(first: 100) {
-                            nodes {
-                                __typename
-                                ... on AssignedEvent {
-                                    actor { login }
-                                    createdAt
-                                }
-                                ... on ClosedEvent {
-                                    actor { login }
-                                    createdAt
-                                }
-                                ... on LabeledEvent {
-                                    actor { login }
-                                    createdAt
-                                }
-                                ... on UnlabeledEvent {
-                                    actor { login }
-                                    createdAt
-                                }
-                            }
-                        }
-                    }
-                    ... on PullRequest {
-                        author { login }
-                        createdAt
-                        updatedAt
-                        mergedAt
-                    }
-                }
-            }
-        }
-        GRAPHQL;
+        $query = file_get_contents(resource_path('graphql/github/github_issue_interactions.graphql'));
 
         $variables = [
             'owner' => $owner,

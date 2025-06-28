@@ -104,7 +104,10 @@ class SyncGitHubInteractions extends Command
                 }
 
                 if (!empty($interactions)) {
-                    $openSearch->indexBulk('interactions', $interactions);
+                    $openSearch->indexBulk(
+                        OpenSearchService::getIndexWithPrefix('interactions'),
+                        $interactions
+                    );
                 }
 
                 $page++;
