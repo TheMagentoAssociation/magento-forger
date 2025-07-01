@@ -7,7 +7,7 @@
     <title>{{ $title ?? 'GitHub Stats' }}</title>
     <meta name="description" content="GitHub PR & Issue Statistics Viewer">
     <link rel="icon" href="{{ asset('favicon.ico') }}">
-    @vite('resources/sass/app.scss', 'resources/js/app.js') {{-- Tailwind CSS --}}
+    @vite(['resources/sass/app.scss', 'resources/js/app.js']) {{-- Tailwind CSS --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
