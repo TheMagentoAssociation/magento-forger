@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'GitHub Stats' }}</title>
-    <meta name="description" content="GitHub PR & Issue Statistics Viewer">
+    <title>{{ $title ?? 'Magento 2 Stats' }}</title>
+    <meta name="description" content="Magento 2 PR & Issue Statistics Viewer">
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     @vite(['resources/sass/app.scss', 'resources/js/app.js']) {{-- Tailwind CSS --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
