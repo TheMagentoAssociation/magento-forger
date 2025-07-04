@@ -63,5 +63,11 @@
                 const ctx = document.getElementById('prAgeOverTime').getContext('2d');
                 new Chart(ctx, config);
             });
+        fetch('/api/charts/issueAgeOverTime')
+            .then(res => res.json())
+            .then(config => {
+                const ctx = document.getElementById('issueAgeOverTime').getContext('2d');
+                new Chart(ctx, config);
+            });
     });
 </script>

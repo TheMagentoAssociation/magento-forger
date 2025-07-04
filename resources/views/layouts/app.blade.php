@@ -17,6 +17,7 @@
     @stack('head')
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col">
+@include('components.universe-bar')
 <nav class="navbar navbar-expand-lg navbar-primary bg-primary" data-bs-theme="dark">
     <div class="container">
         <a class="navbar-brand fs-5" href="/">
@@ -26,6 +27,16 @@
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             {!! $mainMenu !!}
+        </div>
+        <div class="">
+            @auth
+                {{ Auth::user()->name }} ({{ Auth::user()->github_username }})
+            @endauth
+
+            @guest
+                    <a href="{{ route('github_login') }}">Login with GitHub</a>
+            @endguest
+
         </div>
     </div>
 </nav>
