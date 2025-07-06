@@ -169,6 +169,23 @@ return [
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
 
+        'session' => [
+            'url' => env('REDIS_SESSION_URL', env('REDIS_URL')),
+            'host' => env('REDIS_SESSION_HOST', env('REDIS_HOST', '127.0.0.1')),
+            'username' => env('REDIS_SESSION_USERNAME', env('REDIS_USERNAME')),
+            'password' => env('REDIS_SESSION_PASSWORD', env('REDIS_PASSWORD')),
+            'port' => env('REDIS_SESSION_PORT', env('REDIS_PORT', '6379')),
+            'database' => env('REDIS_SESSION_DB', '2'),
+        ],
+
+        'fpc' => [
+            'url' => env('REDIS_FPC_URL', env('REDIS_URL')),
+            'host' => env('REDIS_FPC_HOST', env('REDIS_HOST', '127.0.0.1')),
+            'username' => env('REDIS_FPC_USERNAME', env('REDIS_USERNAME')),
+            'password' => env('REDIS_FPC_PASSWORD', env('REDIS_PASSWORD')),
+            'port' => env('REDIS_FPC_PORT', env('REDIS_PORT', '6379')),
+            'database' => env('REDIS_FPC_DB', '3'),
+        ],
     ],
 
 ];
