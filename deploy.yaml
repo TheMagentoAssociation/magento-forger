@@ -36,11 +36,10 @@ tasks:
     - deploy:release
     - artifact:upload
     - artifact:extract
-    - env:copy
-    - deploy:env
-    - artisan:config:clear
     - deploy:shared
     - deploy:writable
+    - env:copy
+    - artisan:config:clear
     - artisan:storage:link
     - artisan:config:cache
     - artisan:view:cache
@@ -81,8 +80,7 @@ tasks:
         fi
 
   env:copy:
-    - run: 'cp {{release_path}}/.env.production {{release_path}}/.env'
-    - run: 'rm -f {{release_path}}/.env.production'
+    - run: 'mv {{release_path}}/.env.production {{deploy_path}}/shared/.env'
 
   forger:cleanup-local:
     - run_locally: "rm -f /tmp/{{application}}-{{release_name}}.tar.gz"
