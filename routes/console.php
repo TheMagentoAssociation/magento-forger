@@ -8,14 +8,14 @@ use App\Console\Commands\SyncGitHubPRs;
 Schedule::command('model:prune')->daily();
 
 Schedule::command(SyncGitHubPRs::class, ['--since' => '1 day ago'])
-    ->everyTwoHours()
+    ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->runInBackground()
     ->name('sync-github-prs')
     ->description('Sync GitHub Pull Requests using GraphQL');
 
 Schedule::command(SyncGitHubIssues::class, ['--since' => '1 day ago'])
-    ->everyTwoHours(30)
+    ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->runInBackground()
     ->name('sync-github-issues --since "1 day ago"')
