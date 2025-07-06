@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Console\Commands\SyncGitHubPRs;
 
+Schedule::command('model:prune')->daily();
+
 Schedule::command(SyncGitHubPRs::class, ['--since' => '1 day ago'])
     ->everyTwoHours()
     ->withoutOverlapping()

@@ -49,6 +49,8 @@ tasks:
     - artisan:up
     - deploy:symlink
     - jetrails:reload:php-fpm
+    - artisan:schedule-monitor:sync
+    - varnish:purge
 
   artifact:create:
     - run_locally: 'tar --exclude=".idea" --exclude=".vscode" --exclude=".secrets" --exclude=".git" --exclude=".ddev" --exclude=".env" --exclude=".env.example" --exclude=".env.deploy" --exclude="node_modules" --exclude="storage/logs/*" --exclude="storage/framework/cache/*" --exclude="storage/framework/sessions/*" --exclude="storage/framework/views/*" --exclude=".gitignore" --exclude=".gitattributes" --exclude="README.md" --exclude="phpunit.xml" --exclude="tests" -czf /tmp/{{application}}-{{release_name}}.tar.gz .'
@@ -60,6 +62,9 @@ tasks:
 
   artifact:extract:
     - run: 'cd {{release_path}} && tar -xzf {{application}}-{{release_name}}.tar.gz && rm {{application}}-{{release_name}}.tar.gz'
+
+  artisan:schedule-monitor:sync:
+    - run: '{{bin/php}} {{release_path}}/artisan schedule-monitor:sync'
 
   env:create:
     - run_locally: |
@@ -84,6 +89,9 @@ tasks:
 
   jetrails:reload:php-fpm:
     - run: 'jrctl service restart php-fpm-{{php_fpm_version}}'
+
+  varnish:purge:
+    - run: 'curl -X PURGE -H "JetRails-Purge-Type: all" http://127.0.0.1:6081/'
 
 after:
   deploy:failed: deploy:unlock
