@@ -8,7 +8,7 @@ import:
 config:
   repository: 'git@github.com:TheMagentoAssociation/magento-forger.git'
   application: 'forger.magento-opensource.com'
-  php_fpm_version: '8.2'
+  php_fpm_version: '8.3'
   shared_dirs:
     - storage/app
     - storage/logs
@@ -36,11 +36,10 @@ tasks:
     - deploy:release
     - artifact:upload
     - artifact:extract
-    - env:copy
-    - deploy:env
-    - artisan:config:clear
     - deploy:shared
     - deploy:writable
+    - env:copy
+    - artisan:config:clear
     - artisan:storage:link
     - artisan:config:cache
     - artisan:view:cache
@@ -48,6 +47,9 @@ tasks:
     - artisan:migrate
     - artisan:up
     - deploy:symlink
+    - jetrails:reload:php-fpm
+    - artisan:schedule-monitor:sync
+    - varnish:purge
 
   artifact:create:
     - run_locally: 'tar --exclude=".idea" --exclude=".vscode" --exclude=".secrets" --exclude=".git" --exclude=".ddev" --exclude=".env" --exclude=".env.example" --exclude=".env.deploy" --exclude="node_modules" --exclude="storage/logs/*" --exclude="storage/framework/cache/*" --exclude="storage/framework/sessions/*" --exclude="storage/framework/views/*" --exclude=".gitignore" --exclude=".gitattributes" --exclude="README.md" --exclude="phpunit.xml" --exclude="tests" -czf /tmp/{{application}}-{{release_name}}.tar.gz .'
@@ -59,6 +61,9 @@ tasks:
 
   artifact:extract:
     - run: 'cd {{release_path}} && tar -xzf {{application}}-{{release_name}}.tar.gz && rm {{application}}-{{release_name}}.tar.gz'
+
+  artisan:schedule-monitor:sync:
+    - run: '{{bin/php}} {{release_path}}/artisan schedule-monitor:sync'
 
   env:create:
     - run_locally: |
@@ -75,14 +80,16 @@ tasks:
         fi
 
   env:copy:
-    - run: 'cp {{release_path}}/.env.production {{release_path}}/.env'
-    - run: 'rm -f {{release_path}}/.env.production'
+    - run: 'mv {{release_path}}/.env.production {{deploy_path}}/shared/.env'
 
   forger:cleanup-local:
     - run_locally: "rm -f /tmp/{{application}}-{{release_name}}.tar.gz"
 
   jetrails:reload:php-fpm:
-    - run_locally: 'jrctl service restart php{{php_fpm_version}}-fpm'
+    - run: 'jrctl service restart php-fpm-{{php_fpm_version}}'
+
+  varnish:purge:
+    - run: 'curl -X PURGE -H "JetRails-Purge-Type: all" http://127.0.0.1:6081/'
 
 after:
   deploy:failed: deploy:unlock
