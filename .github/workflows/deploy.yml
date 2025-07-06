@@ -58,6 +58,8 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           REDIS_USERNAME: ${{ secrets.REDIS_USERNAME }}
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          REDIS_SESSION_PASSWORD: ${{ secrets.REDIS_SESSION_PASSWORD }}
+          REDIS_FPC_PASSWORD: ${{ secrets.REDIS_FPC_PASSWORD }}
           OPENSEARCH_USERNAME: ${{ secrets.OPENSEARCH_USERNAME }}
           OPENSEARCH_PASSWORD: ${{ secrets.OPENSEARCH_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GH_APP_TOKEN }}
