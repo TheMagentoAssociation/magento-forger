@@ -5,3 +5,20 @@ $primary:       #ee6524 !default;
 $secondary:     #fabf33 !default;
 @import "bootstrap/scss/bootstrap";
 
+// Custom hover effects for calendar cards
+.calendar-card {
+    transition: border-color 0.3s ease;
+    cursor: pointer;
+    
+    &:hover {
+        border-color: $primary !important;
+        box-shadow: 0 2px 4px rgba(238, 101, 36, 0.1);
+    }
+    
+    // Only apply hover effect to cards with links (non-zero totals)
+    &.has-link:hover {
+        border-color: $primary !important;
+        box-shadow: 0 2px 4px rgba(238, 101, 36, 0.2);
+    }
+}
+

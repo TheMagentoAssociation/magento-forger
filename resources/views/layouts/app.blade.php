@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Put in here because laravel stinks and nothing works as documented and frontend people are morons in general that just overcomplicate things for no reason -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @stack('head')
@@ -32,7 +33,7 @@
 </nav>
 @include('components.header')
 
-<main role="main" class="flex-grow container mx-auto pt-4 px-4 py-6 transition-all duration-300 ease-in-out">
+<main role="main" class="flex-grow container mx-auto pt-4 px-3 px-md-4 py-6 transition-all duration-300 ease-in-out">
     @yield('content')
 </main>
 
