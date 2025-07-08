@@ -1,8 +1,8 @@
 <footer class="bg-primary shadow py-4 mb-6">
     <div class="container mx-auto px-4">
         <div class="row">
-            <div class="card-group">
-                <div class="card">
+            <div class="d-flex flex-column flex-lg-row gap-4">
+                <div class="card flex-fill mb-3 mb-lg-0">
                     <div class="card-body">
                         <h5 class="card-title">
                             <a href="https://magento-opensource.com" target="_blank">
@@ -16,7 +16,7 @@
                         <a href="https://github.com/magento/magento2" class="card-link">GitHub</a>
                     </div>
                 </div>
-                <div class="card">
+                <div class="card flex-fill mb-3 mb-lg-0">
                     <div class="card-body">
                         <h5 class="card-title">
                             <a href="https://meet-magento.com" target="_blank">
@@ -29,7 +29,7 @@
                         <a href="https://meet-magento.com" class="card-link">Learn More</a>
                     </div>
                 </div>
-                <div class="card">
+                <div class="card flex-fill mb-3 mb-lg-0">
                     <div class="card-body">
                         <h5 class="card-title">
                             <a href="https://magentoassociation.org" target="_blank">
