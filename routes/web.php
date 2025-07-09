@@ -8,5 +8,25 @@ Route::get('issuesByMonth', [Controllers\IssuesByMonthController::class, 'index'
 Route::get('prsByMonth', [Controllers\PrsByMonthController::class, 'index'])->name('prs-PRsByMonth');
 Route::get('labels/allLabels', [Controllers\LabelController::class, 'listAllLabels'])->name('labels-listAllLabels');
 Route::get('labels/prsMissingComponent', [Controllers\LabelController::class, 'listPrWithoutComponentLabel'])->name('labels-PRsWithoutComponentLabel');
+Route::get('leaderboard/index', [Controllers\LeaderboardController::class, 'index'])->name('leaderboard');
 Route::get('/api/charts/{method}', [Controllers\ChartController::class, 'dispatch']);
 Route::get('/api/universe-bar', [Controllers\UniverseBarController::class, 'render']);
+
+// Authenticated Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/recommend-company', [Controllers\CompanyRecommendationController::class, 'create']);
+    Route::post('/recommend-company', [Controllers\CompanyRecommendationController::class, 'store'])->name('companies.recommend');
+});
+
+// Github Social Login
+Route::get('/auth/github', [Controllers\Auth\LoginController::class, 'redirectToGitHub'])->name('github_login');
+Route::get('/auth/github/callback', [Controllers\Auth\LoginController::class, 'handleGitHubCallback']);
+
+// Render employment form
+Route::middleware('auth')->group(function () {
+    Route::get('/employment', [Controllers\EmploymentController::class, 'create'])->name('employment');
+    Route::post('/employment', [Controllers\EmploymentController::class, 'store']);
+    Route::get('/employment/{id}/edit', [Controllers\EmploymentController::class, 'edit'])->name('employment.edit');
+    Route::put('/employment/{id}', [Controllers\EmploymentController::class, 'update'])->name('employment.update');
+    Route::delete('/employment/{id}', [Controllers\EmploymentController::class, 'destroy'])->name('employment.destroy');
+});
