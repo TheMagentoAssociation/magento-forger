@@ -13,7 +13,7 @@ class PrsByMonthController extends Controller
     {
         $dataToDisplay = [];
         $params = [
-            'index' => OpenSearchService::getIndexWithPrefix(OpenSearchService::OPENSEARCH_GITHUB_ISSUES_INDEX),
+            'index' => OpenSearchService::getIndexWithPrefix(OpenSearchService::OPENSEARCH_GITHUB_PULL_REQUESTS_INDEX),
             'body'  => [
                 'size' => 0,
                 'query' => [
