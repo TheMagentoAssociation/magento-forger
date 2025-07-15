@@ -179,6 +179,7 @@
             width: 100%;
             padding: 0 10px;
         }
+
         #magento-opensource-universe-bar-mainnav {
             overflow-x: auto;
             white-space: nowrap;
