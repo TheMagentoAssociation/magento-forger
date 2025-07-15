@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\Misc\InfoText;
 use App\Services\Search\OpenSearchService;
 use DateTime;
 use Illuminate\View\View;
@@ -81,29 +82,15 @@ class IssuesByMonthController extends Controller
         );
     }
 
-    private function getInfoText(): string
+    private function getInfoText(): InfoText
     {
-        return '
-        <div class="container my-4">
-  <div class="row">
-    <div class="col-md-10 offset-md-1">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <h5 class="card-title">Why Group Open Issues by Month?</h5>
-          <p class="card-text">
-            A long list of open issues can be daunting and discouraging. To make things more manageable, we group issues by the month they were last updated. This breaks the backlog into smaller, more approachable segments.
-          </p>
-          <p class="card-text">
-            Developers can focus on a specific month—like issues from March—and make visible progress. Each update or resolution shortens the list, providing a clear sense of momentum and accomplishment.
-          </p>
-          <p class="card-text">
-            This view also makes it easier to spot older issues that may have fallen through the cracks, giving the community an opportunity to reassess and take action where needed.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-            ';
+        return new InfoText(
+            title: 'Why Group Open Issues by Month?',
+            paragraphs: [
+                'A long list of open issues can be daunting and discouraging. To make things more manageable, we group issues by the month they were last updated. This breaks the backlog into smaller, more approachable segments.',
+                'Developers can focus on a specific month—like issues from March—and make visible progress. Each update or resolution shortens the list, providing a clear sense of momentum and accomplishment.',
+                'This view also makes it easier to spot older issues that may have fallen through the cracks, giving the community an opportunity to reassess and take action where needed.'
+            ]
+        );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\Misc\InfoText;
 use App\Services\Search\OpenSearchService;
 use DateTime;
 use Illuminate\View\View;
@@ -81,29 +82,15 @@ class PrsByMonthController extends Controller
         ]);
     }
 
-    private function getInfoText(): string
+    private function getInfoText(): InfoText
     {
-        return '
-        <div class="container my-4">
-  <div class="row">
-    <div class="col-md-10 offset-md-1">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <h5 class="card-title">Why Group Open Pull Requests by Month?</h5>
-          <p class="card-text">
-            Instead of facing an overwhelming list of hundreds or even thousands of open pull requests, we group them by the month they were last updated. This makes the backlog more digestible and gives developers a clearer, more motivating way to engage with open PRs.
-          </p>
-          <p class="card-text">
-            By focusing on one chunk at a time—say, all PRs from last December—progress becomes visible. Every update or closure shrinks the list in real time, creating a satisfying sense of achievement.
-          </p>
-          <p class="card-text">
-            As an added bonus, this view also helps highlight older PRs that may have been forgotten, giving the community a chance to review, revive, or close them with intention.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-            ';
+        return new InfoText(
+            title: 'Why Group Open Pull Requests by Month?',
+            paragraphs: [
+                'Instead of facing an overwhelming list of hundreds or even thousands of open pull requests, we group them by the month they were last updated. This makes the backlog more digestible and gives developers a clearer, more motivating way to engage with open PRs.',
+                'By focusing on one chunk at a time—say, all PRs from last December—progress becomes visible. Every update or closure shrinks the list in real time, creating a satisfying sense of achievement.',
+                'As an added bonus, this view also helps highlight older PRs that may have been forgotten, giving the community a chance to review, revive, or close them with intention.'
+            ]
+        );
     }
 }

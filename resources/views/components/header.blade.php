@@ -31,7 +31,20 @@
     <div class="collapse" id="headerInfoCollapse">
         <div class="container mx-auto px-4">
             <div class="p-4 bg-sky-100 border-l-4 border-sky-500 text-sky-800 mb-4" role="alert">
-                {!! $infoText !!}
+                <div class="container my-4">
+                    <div class="row">
+                        <div class="col-md-10 offset-md-1">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $infoText->title }}</h5>
+                                    @foreach($infoText->paragraphs as $paragraph)
+                                        <p class="card-text">{{ $paragraph }}</p>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
