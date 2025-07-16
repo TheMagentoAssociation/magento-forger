@@ -38,20 +38,10 @@ class GitHubService
         ]);
     }
 
-    /**
-     * Execute a GraphQL query with variables.
-     *
-     * @param string $query
-     * @param array $variables
-     * @return array|null
-     * @throws GitHubGraphQLException
-     * @throws JsonException
-     * @throws GuzzleException
-     */
     private function executeGraphQLQuery(string $query, array $variables = []): ?array
     {
-
         $retryCount = 0;
+
         do {
             $response = $this->client->post('', [
                 'json' => [
@@ -95,11 +85,31 @@ class GitHubService
         return null;
     }
 
-    /**
-     * @throws GitHubGraphQLException
-     * @throws GuzzleException
-     * @throws JsonException
-     */
+    public function fetchIssueCount(string $owner, string $repo): IssueCounts
+    {
+        $query = file_get_contents(resource_path('graphql/github/github_issue_count.graphql'));
+
+        $data = $this->executeGraphQLQuery($query, [
+            'owner' => $owner,
+            'repo' => $repo,
+        ]);
+
+        return IssueCounts::fromGraphQL($data);
+    }
+
+    public function fetchIssues(string $owner, string $repo, ?string $cursor = null): array
+    {
+        $query = file_get_contents(resource_path('graphql/github/github_issues.graphql'));
+
+        $data = $this->executeGraphQLQuery($query, [
+            'owner' => $owner,
+            'repo' => $repo,
+            'cursor' => $cursor,
+        ]);
+
+        return $data['repository']['issues'] ?? [];
+    }
+
     public function fetchPullRequestCount(string $owner, string $repo): PullRequestCounts
     {
         $query = file_get_contents(resource_path('graphql/github/github_pull_request_count.graphql'));
@@ -112,11 +122,6 @@ class GitHubService
         return PullRequestCounts::fromGraphQL($data);
     }
 
-    /**
-     * @throws GitHubGraphQLException
-     * @throws GuzzleException
-     * @throws JsonException
-     */
     public function fetchPullRequests(string $owner, string $repo, ?string $cursor = null): array
     {
         $query = file_get_contents(resource_path('graphql/github/github_pull_requests.graphql'));
@@ -130,38 +135,177 @@ class GitHubService
         return $data['repository']['pullRequests'] ?? [];
     }
 
-    /**
-     * @throws GitHubGraphQLException
-     * @throws GuzzleException
-     * @throws JsonException
-     */
-    public function fetchIssueCount(string $owner, string $repo): IssueCounts
+    public function fetchInteractionsForIssue(string $owner, string $repo, int $issueNumber): array
     {
-        $query = file_get_contents(resource_path('graphql/github/github_issue_count.graphql'));
+        $query = file_get_contents(resource_path('graphql/github/github_issue_interactions.graphql'));
 
-        $data = $this->executeGraphQLQuery($query, [
+        $variables = [
             'owner' => $owner,
-            'repo' => $repo,
-        ]);
+            'name' => $repo,
+            'number' => $issueNumber,
+        ];
 
-        return IssueCounts::fromGraphQL($data);
+        $data = $this->executeGraphQLQuery($query, $variables);
+        $node = $data['repository']['issueOrPullRequest'] ?? null;
+        $interactions = [];
+
+        if (!$node) {
+            return [];
+        }
+
+        $isPR = $node['__typename'] === 'PullRequest';
+        $author = $node['author']['login'] ?? 'unknown';
+
+        // Created issue or PR
+        if (isset($node['createdAt'])) {
+            $interactions[] = [
+                'author' => $author,
+                'type' => $isPR ? 'created_pr' : 'created_issue',
+                'date' => $node['createdAt'],
+            ];
+        }
+
+        // Updated PR
+        if ($isPR && isset($node['updatedAt']) && $node['updatedAt'] !== $node['createdAt']) {
+            $interactions[] = [
+                'author' => $author,
+                'type' => 'updated_pr',
+                'date' => $node['updatedAt'],
+            ];
+        }
+
+        // Merged PR
+        if ($isPR && isset($node['mergedAt']) && $node['mergedAt'] !== null) {
+            $interactions[] = [
+                'author' => $author,
+                'type' => 'merged_pr',
+                'date' => $node['mergedAt'],
+            ];
+        }
+
+        // Comments
+        foreach ($node['comments']['nodes'] ?? [] as $comment) {
+            if (!isset($comment['createdAt'])) {
+                continue;
+            }
+            $interactions[] = [
+                'author' => $comment['author']['login'] ?? 'unknown',
+                'type' => 'comment',
+                'date' => $comment['createdAt'],
+            ];
+        }
+
+        // Timeline events
+        foreach ($node['timelineItems']['nodes'] ?? [] as $event) {
+            if (!isset($event['createdAt'])) {
+                continue;
+            }
+
+            $interactions[] = [
+                'author' => $event['actor']['login'] ?? 'unknown',
+                'type' => strtolower(str_replace('Event', '', $event['__typename'])),
+                'date' => $event['createdAt'],
+            ];
+        }
+
+        return $interactions;
     }
 
-    /**
-     * @throws GitHubGraphQLException
-     * @throws GuzzleException
-     * @throws JsonException
-     */
-    public function fetchIssues(string $owner, string $repo, ?string $cursor = null): array
+    public function fetchIssuesPaged(string $owner, string $repo, ?string $cursor = null): array
     {
-        $query = file_get_contents(resource_path('graphql/github/github_issues.graphql'));
+        $query = <<<'GRAPHQL'
+    query($owner: String!, $name: String!, $cursor: String) {
+        repository(owner: $owner, name: $name) {
+            issues(first: 100, after: $cursor, orderBy: { field: UPDATED_AT, direction: DESC }) {
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+                nodes {
+                    number
+                    title
+                    url
+                    updatedAt
+                    createdAt
+                    author { login }
+                }
+            }
+        }
+    }
+    GRAPHQL;
 
-        $data = $this->executeGraphQLQuery($query, [
+        $variables = [
             'owner' => $owner,
-            'repo' => $repo,
+            'name' => $repo,
             'cursor' => $cursor,
+        ];
+
+        $data = $this->executeGraphQLQuery($query, $variables);
+
+        $issues = $data['repository']['issues']['nodes'] ?? [];
+        $pageInfo = $data['repository']['issues']['pageInfo'] ?? [];
+
+        return [
+            'issues' => $issues,
+            'endCursor' => $pageInfo['endCursor'] ?? null,
+            'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
+        ];
+    }
+
+    public function fetchEventsForIssue(string $owner, string $repo, int $number): array
+    {
+        $restClient = new \GuzzleHttp\Client([
+            'base_uri' => 'https://api.github.com/',
+            'headers' => [
+                'Authorization' => "Bearer {$this->token}",
+                'Accept' => 'application/vnd.github.v3+json',
+                'User-Agent' => 'Laravel-GitHubSync/1.0',
+            ],
         ]);
 
-        return $data['repository']['issues'] ?? [];
+        $events = [];
+        $url = "repos/$owner/$repo/issues/$number/timeline";
+
+        try {
+            $response = $restClient->get($url);
+            $raw = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+
+            foreach ($raw as $event) {
+                if (!isset($event['event'], $event['created_at'])) {
+                    continue;
+                }
+
+                $events[] = [
+                    'type' => $event['event'],
+                    'actor' => $event['actor']['login'] ?? 'unknown',
+                    'created_at' => $event['created_at'],
+                ];
+            }
+        } catch (\Throwable $e) {
+            \Log::error("Failed to fetch events for issue #$number", ['exception' => $e]);
+        }
+
+        return $events;
+    }
+
+    public function getRateLimit(): array
+    {
+        $restClient = new Client([
+            'base_uri' => 'https://api.github.com/',
+            'headers' => [
+                'Authorization' => "Bearer {$this->token}",
+                'Accept' => 'application/vnd.github+json',
+                'User-Agent' => 'Laravel-GitHubSync/1.0',
+            ],
+        ]);
+
+        try {
+            $response = $restClient->get('rate_limit');
+            $json = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+            return $json['rate'] ?? [];
+        } catch (Exception $e) {
+            Log::warning('Failed to fetch GitHub rate limit', ['exception' => $e]);
+            return ['remaining' => 0];
+        }
     }
 }
