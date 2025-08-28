@@ -40,6 +40,10 @@ jobs:
 
       - name: Set up SSH for Jumpbox
         run: |
+          # Create SSH directory if it doesn't exist
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
           # Write the jumpbox private key
           echo "${{ secrets.JUMPBOX_PRIVATE_KEY }}" > ~/.ssh/jumpbox_id_rsa
           chmod 600 ~/.ssh/jumpbox_id_rsa
