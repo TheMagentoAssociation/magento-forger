@@ -72,6 +72,11 @@ jobs:
           # Ensure known_hosts exists to avoid warnings
           touch ~/.ssh/known_hosts
 
+      - name: Debug SSH connection with explicit options
+        run: |
+          echo "Testing direct SSH connection..."
+          sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump="jumpbox" -o PreferredAuthentications=password -o PubkeyAuthentication=no $SSH_USER@$SSH_HOST -p $SSH_PORT "hostname && pwd && whoami"
+
       - name: Debug SSH connection and deploy path
         run: |
           echo "Testing SSH connection to forger-jump..."
