@@ -2,8 +2,10 @@
 set -e
 set -o pipefail
 
+DEPLOY_HOST="forger"
 if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
     echo "Running in GitHub Actions - using environment variables from secrets"
+    DEPLOY_HOST="forger-jump"
 else
     echo "Running locally - sourcing deployment configuration"
     if [[ ! -f .env.deploy ]]; then
@@ -18,5 +20,5 @@ else
 fi
 
 echo "Deploying to production..."
-sshpass -e dep forger:deploy forger
+sshpass -e dep forger:deploy $DEPLOY_HOST
 echo "Deployment complete!"

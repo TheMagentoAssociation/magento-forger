@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -38,9 +38,35 @@ jobs:
       - name: Install sshpass & envsubst
         run: sudo apt-get update && sudo apt-get install -y sshpass gettext-base rsync
 
+      - name: Set up SSH for Jumpbox
+        run: |
+          # Write the jumpbox private key
+          echo "${{ secrets.JUMPBOX_PRIVATE_KEY }}" > ~/.ssh/jumpbox_id_rsa
+          chmod 600 ~/.ssh/jumpbox_id_rsa
+
+          # Write the SSH config
+          cat > ~/.ssh/config <<EOL
+          Host jumpbox
+          HostName ${{ secrets.JUMPBOX_HOST }}
+          User ${{ secrets.JUMPBOX_USER }}
+          IdentityFile ~/.ssh/jumpbox_id_rsa
+          StrictHostKeyChecking no
+          UserKnownHostsFile=/dev/null
+
+          Host forger-jump
+          HostName ${{ secrets.SSH_HOST }}
+          User ${{ secrets.SSH_USER }}
+          Port ${{ secrets.SSH_PORT }}
+          ProxyJump jumpbox
+          StrictHostKeyChecking no
+          UserKnownHostsFile=/dev/null
+          EOL
+
+          # Ensure known_hosts exists to avoid warnings
+          touch ~/.ssh/known_hosts
+
       - name: Deploy application
         run: |
-          echo -e "Host ${{ secrets.SSH_HOST }}\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" >> ~/.ssh/config
           ./deploy.sh
         env:
           GITHUB_ACTIONS: true
