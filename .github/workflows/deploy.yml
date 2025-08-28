@@ -72,6 +72,16 @@ jobs:
           # Ensure known_hosts exists to avoid warnings
           touch ~/.ssh/known_hosts
 
+      - name: Debug connections step by step
+        run: |
+          echo "Testing jumpbox connection (should use SSH key)..."
+          ssh jumpbox "hostname && pwd && whoami"
+          echo "Testing forger-jump connection through SSH config..."
+          sshpass -e ssh forger-jump "hostname && pwd && whoami"
+        env:
+          SSHPASS: ${{ secrets.SSHPASS }}
+
+
       - name: Debug SSH connection with explicit options
         run: |
           echo "Testing direct SSH connection..."
