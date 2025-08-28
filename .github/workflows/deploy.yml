@@ -76,6 +76,12 @@ jobs:
         run: |
           echo "Testing direct SSH connection..."
           sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump="jumpbox" -o PreferredAuthentications=password -o PubkeyAuthentication=no $SSH_USER@$SSH_HOST -p $SSH_PORT "hostname && pwd && whoami"
+        env:
+          SSHPASS: ${{ secrets.SSHPASS }}
+          SSH_PATH: ${{ secrets.SSH_PATH }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
 
       - name: Debug SSH connection and deploy path
         run: |
