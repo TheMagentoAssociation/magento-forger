@@ -62,6 +62,9 @@ jobs:
           User ${{ secrets.SSH_USER }}
           Port ${{ secrets.SSH_PORT }}
           ProxyJump jumpbox
+          PreferredAuthentications password
+          PubkeyAuthentication no
+          PasswordAuthentication yes
           StrictHostKeyChecking no
           UserKnownHostsFile=/dev/null
           EOL
