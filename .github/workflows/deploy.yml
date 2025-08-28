@@ -72,6 +72,23 @@ jobs:
           # Ensure known_hosts exists to avoid warnings
           touch ~/.ssh/known_hosts
 
+      - name: Debug SSH connection and deploy path
+        run: |
+          echo "Testing SSH connection to forger-jump..."
+          sshpass -e ssh forger-jump "hostname && pwd && whoami"
+          echo "Listing current directory contents..."
+          sshpass -e ssh forger-jump "ls -la"
+          echo "Checking if deploy path exists..."
+          sshpass -e ssh forger-jump "ls -la $SSH_PATH || echo 'Deploy path $SSH_PATH does not exist'"
+          echo "Checking parent directory..."
+          sshpass -e ssh forger-jump "ls -la \$(dirname $SSH_PATH)"
+        env:
+          SSHPASS: ${{ secrets.SSHPASS }}
+          SSH_PATH: ${{ secrets.SSH_PATH }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+
       - name: Deploy application
         run: |
           ./deploy.sh
