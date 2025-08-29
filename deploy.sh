@@ -20,5 +20,5 @@ else
 fi
 
 echo "Deploying to production..."
-sshpass -e dep forger:deploy -v $DEPLOY_HOST
+sshpass -e dep forger:deploy $DEPLOY_HOST
 echo "Deployment complete!"
