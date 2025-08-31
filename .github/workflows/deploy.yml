@@ -53,6 +53,7 @@ jobs:
           Host jumpbox
           HostName ${{ secrets.JUMPBOX_HOST }}
           User ${{ secrets.JUMPBOX_USER }}
+          Port ${{ secrets.JUMPBOX_PORT }}
           IdentityFile ~/.ssh/jumpbox_id_rsa
           StrictHostKeyChecking no
           UserKnownHostsFile=/dev/null
