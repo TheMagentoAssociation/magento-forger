@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\Misc\InfoText;
 use App\Services\Search\OpenSearchService;
 use DateTime;
 use Illuminate\View\View;
@@ -75,6 +76,21 @@ class IssuesByMonthController extends Controller
                 $dataToDisplay[$yearBucket['key_as_string']]['months'][$monthBucket['key_as_string']]['end'] = $lastOfMonth->format('Y-m-d\TH:i:s\Z');
             }
         }
-        return  view('issuesByMonth/index', ['issues' => $dataToDisplay]);
+        return  view('issuesByMonth/index', [
+            'infoText' => $this->getInfoText(),
+            'issues' => $dataToDisplay]
+        );
+    }
+
+    private function getInfoText(): InfoText
+    {
+        return new InfoText(
+            title: 'Why Group Open Issues by Month?',
+            paragraphs: [
+                'A long list of open issues can be daunting and discouraging. To make things more manageable, we group issues by the month they were last updated. This breaks the backlog into smaller, more approachable segments.',
+                'Developers can focus on a specific month—like issues from March—and make visible progress. Each update or resolution shortens the list, providing a clear sense of momentum and accomplishment.',
+                'This view also makes it easier to spot older issues that may have fallen through the cracks, giving the community an opportunity to reassess and take action where needed.'
+            ]
+        );
     }
 }
