@@ -7,8 +7,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "filament/filament": "^3.3",
         "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^12.0",
+        "laravel/socialite": "^5.21",
         "laravel/tinker": "^2.10.1",
         "opensearch-project/opensearch-php": "^2.4",
         "spatie/laravel-menu": "^4.2",
@@ -38,7 +40,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
