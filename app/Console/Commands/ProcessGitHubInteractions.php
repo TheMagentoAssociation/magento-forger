@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Search\OpenSearchService;
 use Illuminate\Console\Command;
 use OpenSearch\Client;
 use App\Models\User;
@@ -40,7 +41,7 @@ class ProcessGitHubInteractions extends Command
 
         // Initial scroll request
         $params = [
-            'index' => $this->index,
+            'index' => OpenSearchService::getIndexWithPrefix($this->index),
             'scroll' => $scrollTimeout,
             'size' => $pageSize,
             '_source' => ['github_account_name', 'interaction_date', 'interaction_name', 'issues-id'],

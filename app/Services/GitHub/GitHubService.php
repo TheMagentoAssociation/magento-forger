@@ -213,26 +213,7 @@ class GitHubService
 
     public function fetchIssuesPaged(string $owner, string $repo, ?string $cursor = null): array
     {
-        $query = <<<'GRAPHQL'
-    query($owner: String!, $name: String!, $cursor: String) {
-        repository(owner: $owner, name: $name) {
-            issues(first: 100, after: $cursor, orderBy: { field: UPDATED_AT, direction: DESC }) {
-                pageInfo {
-                    hasNextPage
-                    endCursor
-                }
-                nodes {
-                    number
-                    title
-                    url
-                    updatedAt
-                    createdAt
-                    author { login }
-                }
-            }
-        }
-    }
-    GRAPHQL;
+        $query = file_get_contents(resource_path('graphql/github/github_issue_paged.graphql'));
 
         $variables = [
             'owner' => $owner,
