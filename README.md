@@ -143,15 +143,29 @@ ddev artisan sync:github:issues
 
 # Sync GitHub pull requests (this may take a while for the initial sync)
 ddev artisan sync:github:prs
+
+# Sync GitHub events (this may take a long time for the initial sync)
+ddev artisan sync:github:events
+
+# Sync GitHub interactions (this will take a long time for the initial sync)
+ddev artisan sync:github:interactions
+
 ```
 
-**Note**: The initial sync can take a few minutes depending on the repository size. You can monitor progress in the 
+**Note**: The initial sync can take a few minutes or hours depending on the repository size. You can monitor progress in the 
 terminal. For subsequent syncs, you can use the `--since` option:
 
 ```bash
 # Sync only recent data (much faster)
 ddev artisan sync:github:issues --since "1 week ago"
 ddev artisan sync:github:prs --since "1 week ago"
+ddev artisan sync:github:events --since "1 week ago"
+ddev artisan sync:github:interactions --since "1 week ago"
+```
+
+Process the interactions:
+```bash
+ddev artisan process:github:interactions
 ```
 
 ### 6. Start the Development Server

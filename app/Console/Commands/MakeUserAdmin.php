@@ -27,7 +27,7 @@ class MakeUserAdmin extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $email = $this->ask('User email');
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
