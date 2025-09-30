@@ -24,30 +24,33 @@ class EmploymentController extends Controller
         ]);
 
         $user = auth()->user();
+        if ($user) {
+            $conflict = $user->affiliations()
+                ->where('company_id', $request->company_id)
+                ->where(function ($query) use ($request) {
+                    $query
+                        ->where(function ($q) use ($request) {
+                            $q->whereNull('end_date')
+                                ->orWhere('end_date', '>=', $request->start_date);
+                        })
+                        ->where('start_date', '<=', $request->end_date ?? now());
+                })
+                ->exists();
 
-        $conflict = $user->affiliations()
-            ->where('company_id', $request->company_id)
-            ->where(function ($query) use ($request) {
-                $query
-                    ->where(function ($q) use ($request) {
-                        $q->whereNull('end_date')
-                            ->orWhere('end_date', '>=', $request->start_date);
-                    })
-                    ->where('start_date', '<=', $request->end_date ?? now());
-            })
-            ->exists();
+            if ($conflict) {
+                return back()
+                    ->withErrors(['conflict' => 'You already have a conflicting employment period at this company.'])
+                    ->withInput();
+            }
 
-        if ($conflict) {
-            return back()
-                ->withErrors(['conflict' => 'You already have a conflicting employment period at this company.'])
-                ->withInput();
+            $user->affiliations()->create($request->only([
+                'company_id',
+                'start_date',
+                'end_date',
+            ]));
+        } else {
+            return back()->withErrors(['error' => 'You must be logged in to add employment.']);
         }
-
-        $user->affiliations()->create($request->only([
-            'company_id',
-            'start_date',
-            'end_date',
-        ]));
 
         return back()->with('status', 'Employment saved.');
     }

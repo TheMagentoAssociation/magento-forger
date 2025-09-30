@@ -29,6 +29,7 @@ class ProcessGitHubInteractions extends Command
 
     public function handle(): void
     {
+        // todo: move logic into a separate class
         $scrollTimeout = '1m';
         $pageSize = 500;
 

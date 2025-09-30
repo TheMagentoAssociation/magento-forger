@@ -1,10 +1,13 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
-use Laravel\Socialite\Facades\Socialite;
+
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
 
-class LoginController {
+class LoginController
+{
     public function redirectToGitHub()
     {
         return Socialite::driver('github')->redirect();
@@ -13,8 +16,6 @@ class LoginController {
     public function handleGitHubCallback()
     {
         $githubUser = Socialite::driver('github')->user();
-        $userId = $githubUser->getId();
-        $foo = '';
         $user = User::updateOrCreate(
             ['github_id' => $githubUser->getId()],
             [
@@ -26,6 +27,7 @@ class LoginController {
         );
 
         Auth::login($user);
+
         return redirect()->route('home');
     }
 }

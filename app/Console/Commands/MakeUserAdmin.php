@@ -2,7 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
+use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
 class MakeUserAdmin extends Command
 {
@@ -28,17 +32,31 @@ class MakeUserAdmin extends Command
         $email = $this->ask('User email');
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->error('Please enter a valid email address.');
-            return Command::FAILURE;
-        }
-        $user = \App\Models\User::where('email', $email)->first();
 
-        if (!$user) {
-            $this->error("User not found.");
-            return;
+            return SymfonyCommand::FAILURE;
         }
+        try {
+            $user = User::where('email', $email)->firstOrFail();
 
-        $user->is_admin = true;
-        $user->save();
-        $this->info("User is now an admin.");
+            if ($user->is_admin) {
+                $this->warn("User {$email} is already an admin. No action taken");
+
+                return SymfonyCommand::SUCCESS;
+            }
+
+            $user->update(['is_admin' => true]);
+
+            $this->info("User {$email} is now an admin.");
+
+            return SymfonyCommand::SUCCESS;
+        } catch (ModelNotFoundException) {
+            $this->error("User with email {$email} not found.");
+
+            return SymfonyCommand::FAILURE;
+        } catch (Exception $e) {
+            $this->error("Failed to update user: " . $e->getMessage());
+
+            return SymfonyCommand::FAILURE;
+        }
     }
 }
