@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use OpenSearch\Client;
-use OpenSearch\HttpTransport;
 use OpenSearch\GuzzleClientFactory;
 
 class OpenSearchServiceProvider extends ServiceProvider

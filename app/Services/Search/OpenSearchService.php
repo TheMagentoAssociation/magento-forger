@@ -3,6 +3,7 @@
 namespace App\Services\Search;
 
 use OpenSearch\Client;
+use Illuminate\Support\Facades\Log;
 
 class OpenSearchService
 {
@@ -128,6 +129,72 @@ class OpenSearchService
             'comments_count' => $issue['comments']['totalCount'] ?? 0,
         ];
     }
+
+    /**
+     * Bulk index any documents with a SHA1 hash of the document as its ID.
+     *
+     * @param string $index
+     * @param array $documents
+     */
+    public function indexBulk(string $index, array $documents): void
+    {
+        if (empty($documents)) {
+            return;
+        }
+
+        $indexName = self::getIndexWithPrefix($index);
+        $body = [];
+
+        foreach ($documents as $doc) {
+            try {
+                $docJson = json_encode($doc, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+                $docId = sha1($docJson);
+
+                $body[] = [
+                    'index' => [
+                        '_index' => $indexName,
+                        '_id' => $docId,
+                    ],
+                ];
+                $body[] = $doc;
+            } catch (\Throwable $e) {
+                Log::warning('Skipping document due to encoding/hash error', [
+                    'exception' => $e,
+                    'document' => $doc,
+                ]);
+            }
+        }
+
+        try {
+            $this->client->bulk(['body' => $body]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to bulk index documents to OpenSearch', [
+                'index' => $indexName,
+                'exception' => $e,
+            ]);
+        }
+    }
+
+    public function indexDocument(string $index, array $document): void
+    {
+        try {
+            $json = json_encode($document, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+            $id = sha1($json);
+
+            $this->client->index([
+                'index' => self::getIndexWithPrefix($index),
+                'id' => $id,
+                'body' => $document,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error("OpenSearch indexing failed", [
+                'index' => $index,
+                'document' => $document,
+                'exception' => $e,
+            ]);
+        }
+    }
+
     public static function getIndexPrefix(): string
     {
         return config('opensearch.index_prefix', '');
@@ -135,6 +202,11 @@ class OpenSearchService
 
     public static function getIndexWithPrefix(string $index): string
     {
-        return self::getIndexPrefix() . $index;
+        $prefix = self::getIndexPrefix();
+        if ($prefix && str_starts_with($index, $prefix)) {
+            return $index;
+        }
+
+        return $prefix . $index;
     }
 }
