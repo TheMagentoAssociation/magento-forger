@@ -99,7 +99,7 @@ class ProcessGitHubInteractions extends Command
                 $source['company_name'] = $companyName;
 
                 $this->client->index([
-                    'index' => $this->newIndex,
+                    'index' => OpenSearchService::getIndexWithPrefix($this->newIndex),
                     'body' => $source
                 ]);
 

@@ -13,7 +13,7 @@ class LabelController extends Controller
     public function listAllLabels(Client $client): view
     {
         $params = [
-            'index' => 'github-issues',
+            'index' => OpenSearchService::getIndexWithPrefix('github-issues'),
             'body'  => [
                 'size' => 0,
                 'query' => [

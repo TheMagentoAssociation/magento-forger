@@ -202,6 +202,11 @@ class OpenSearchService
 
     public static function getIndexWithPrefix(string $index): string
     {
-        return self::getIndexPrefix() . $index;
+        $prefix = self::getIndexPrefix();
+        if ($prefix && str_starts_with($index, $prefix)) {
+            return $index;
+        }
+
+        return $prefix . $index;
     }
 }
