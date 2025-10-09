@@ -98,6 +98,9 @@ OPENSEARCH_PORT=9200
 # GitHub API settings
 GITHUB_REPO=magento/magento2
 GITHUB_TOKEN=your_github_personal_access_token_here
+GITHUB_CLIENT_ID=your_client_id_here
+GITHUB_CLIENT_SECRET=your_client_secret_here
+GITHUB_REDIRECT_URI=your_local_ddev_url/auth/github/callback
 ```
 
 **Important**: You need to create a GitHub Personal Access Token:
@@ -109,6 +112,19 @@ GITHUB_TOKEN=your_github_personal_access_token_here
    - `public_repo` (to read public repository data)
    - `read:org` (if analyzing organization repositories)
 5. Copy the generated token and paste it as the `GITHUB_TOKEN` value
+
+
+**Create a Local GitHub OAuth App**
+1. Go to: https://github.com/settings/developers
+2. Click "OAuth Apps" → "New OAuth App"
+3. Fill in these details
+   1. Application name: Magento Forger Local Dev (or any name you prefer)
+   2. Homepage URL: https://gh-stats.ddev.site (your local DDEV URL)
+   3. Authorization callback URL: https://gh-stats.ddev.site/auth/github/callback
+   4. Application description: (optional) "Local development OAuth for Magento Forger"
+   5. Click "Register application"
+   6. Click "Generate a new client secret" to get your Client Secret
+4. Add OAuth Credentials to Your Local .env File
 
 ### 4. Run Database Migrations
 
@@ -127,15 +143,29 @@ ddev artisan sync:github:issues
 
 # Sync GitHub pull requests (this may take a while for the initial sync)
 ddev artisan sync:github:prs
+
+# Sync GitHub events (this may take a long time for the initial sync)
+ddev artisan sync:github:events
+
+# Sync GitHub interactions (this will take a long time for the initial sync)
+ddev artisan sync:github:interactions
+
 ```
 
-**Note**: The initial sync can take a few minutes depending on the repository size. You can monitor progress in the 
+**Note**: The initial sync can take a few minutes or hours depending on the repository size. You can monitor progress in the 
 terminal. For subsequent syncs, you can use the `--since` option:
 
 ```bash
 # Sync only recent data (much faster)
 ddev artisan sync:github:issues --since "1 week ago"
 ddev artisan sync:github:prs --since "1 week ago"
+ddev artisan sync:github:events --since "1 week ago"
+ddev artisan sync:github:interactions --since "1 week ago"
+```
+
+Process the interactions:
+```bash
+ddev artisan process:github:interactions
 ```
 
 ### 6. Start the Development Server
