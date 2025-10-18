@@ -119,8 +119,8 @@ GITHUB_REDIRECT_URI=your_local_ddev_url/auth/github/callback
 2. Click "OAuth Apps" → "New OAuth App"
 3. Fill in these details
    1. Application name: Magento Forger Local Dev (or any name you prefer)
-   2. Homepage URL: https://gh-stats.ddev.site (your local DDEV URL)
-   3. Authorization callback URL: https://gh-stats.ddev.site/auth/github/callback
+   2. Homepage URL: https://forger.ddev.site (your local DDEV URL)
+   3. Authorization callback URL: https://forger.ddev.site/auth/github/callback
    4. Application description: (optional) "Local development OAuth for Magento Forger"
    5. Click "Register application"
    6. Click "Generate a new client secret" to get your Client Secret
