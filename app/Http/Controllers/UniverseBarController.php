@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
@@ -15,12 +16,14 @@ class UniverseBarController extends Controller
             'magentoassociation.org',
             '*.magentoassociation.org',
             'meet-magento.com',
-            'gh-stats.ddev.site'
+            'gh-stats.ddev.site',
+            'forger.magento-opensource.com',
+            'forger.ddev.site',
         ];
 
         $origin = $request->headers->get('Origin');
 
-        if ($request->getHost() !== 'gh-stats.ddev.site' || !$this->isOriginAllowed($origin, $allowedOrigins, $request)) {
+        if (!$this->isOriginAllowed($origin, $allowedOrigins, $request)) {
             return response('Forbidden', 403);
         }
 
@@ -34,7 +37,7 @@ class UniverseBarController extends Controller
     private function isOriginAllowed(?string $origin, array $allowedOrigins, Request $request): bool
     {
         // DDEV Fallback
-        if ($request->getHost() === 'gh-stats.ddev.site') return true;
+        if (str_contains($request->getHost(), 'ddev.site')) return true;
         if (!$origin) return false;
 
         $host = parse_url($origin, PHP_URL_HOST);
