@@ -178,7 +178,7 @@ ddev npm run dev
 # Visit your site at the URL shown by: ddev describe
 ```
 
-Your application should now be available at the URL provided by `ddev describe` (typically something like `https://magento-forger.ddev.site`).
+Your application should now be available at the URL provided by `ddev describe` (typically something like `https://forger.ddev.site`).
 
 ## Usage
 
