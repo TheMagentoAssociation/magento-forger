@@ -47,7 +47,11 @@ class IssuesByMonthController extends Controller
             ]
         ];
 
-        $result = $client->search($params);
+        try {
+            $result = $client->search($params);
+        } catch (\Exception $e) {
+            abort(500, 'Error fetching Issue data: ' . $e->getMessage());
+        }
         foreach ($result['aggregations']['by_year']['buckets'] as $yearBucket) {
             $dataToDisplay[$yearBucket['key_as_string']] = [
                 'year' =>  $yearBucket['key_as_string'],

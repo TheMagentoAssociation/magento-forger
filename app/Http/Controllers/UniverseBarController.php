@@ -16,9 +16,8 @@ class UniverseBarController extends Controller
             'magentoassociation.org',
             '*.magentoassociation.org',
             'meet-magento.com',
-            'gh-stats.ddev.site',
             'forger.magento-opensource.com',
-            'forger.ddev.site',
+            '*.ddev.site',
         ];
 
         $origin = $request->headers->get('Origin');

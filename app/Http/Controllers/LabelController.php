@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Search\OpenSearchService;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,7 +13,7 @@ class LabelController extends Controller
     public function listAllLabels(Client $client): view
     {
         $params = [
-            'index' => 'github-issues',
+            'index' => OpenSearchService::getIndexWithPrefix('github-issues'),
             'body'  => [
                 'size' => 0,
                 'query' => [
@@ -33,7 +34,12 @@ class LabelController extends Controller
                 ]
             ]
         ];
-        $result = $client->search($params);
+
+        try {
+            $result = $client->search($params);
+        } catch (\Exception $e) {
+            abort(500, 'Error fetching label data: ' . $e->getMessage());
+        }
         $nestedLabels = [];
         $buckets = $result['aggregations']['by_label']['buckets'];
 
@@ -63,7 +69,7 @@ class LabelController extends Controller
     public function listPrWithoutComponentLabel(Client $client): view
     {
         $params = [
-            'index' => 'github-pull-requests',
+            'index' => OpenSearchService::getIndexWithPrefix('github-pull-requests'),
             'body'  => [
                 'size' => 0,
                 'query' => [
@@ -104,7 +110,11 @@ class LabelController extends Controller
                 ]
             ]
         ];
-        $result = $client->search($params);
+        try {
+            $result = $client->search($params);
+        } catch (\Exception $e) {
+            abort(500, 'Error fetching PR data: ' . $e->getMessage());
+        }
         $dataToDisplay = [];
         foreach ($result['aggregations']['by_year']['buckets'] as $yearBucket) {
             $dataToDisplay[$yearBucket['key_as_string']] = [
