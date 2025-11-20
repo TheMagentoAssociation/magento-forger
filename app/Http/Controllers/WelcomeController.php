@@ -39,7 +39,11 @@ class WelcomeController extends Controller
             ))
             ->setSize(0);
 
-        $prResponse = $search->searchPRs($prBuilder);
+        try {
+            $prResponse = $search->searchPRs($prBuilder);
+        } catch (\Exception $e) {
+            abort(500, 'Error fetching PR data: ' . $e->getMessage());
+        }
 
         // ---- ISSUE AGGREGATIONS ----
         $issueBuilder = new QueryBuilder();
@@ -68,7 +72,11 @@ class WelcomeController extends Controller
             ))
             ->setSize(0);
 
-        $issueResponse = $search->searchIssues($issueBuilder);
+        try {
+            $issueResponse = $search->searchIssues($issueBuilder);
+        } catch (\Exception $e) {
+            abort(500, 'Error fetching Issue data: ' . $e->getMessage());
+        }
 
         $prsOpened     = $prResponse['aggregations']['prs_opened_per_month']['buckets'] ?? [];
         $prsClosed     = $prResponse['aggregations']['prs_closed_per_month']['buckets'] ?? [];

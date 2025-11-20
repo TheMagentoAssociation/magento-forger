@@ -8,9 +8,7 @@ use App\Exceptions\GitHubGraphQLException;
 use DateTime;
 use Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
-use JsonException;
 use RuntimeException;
 
 class GitHubService
@@ -43,28 +41,50 @@ class GitHubService
         $retryCount = 0;
 
         do {
-            $response = $this->client->post('', [
-                'json' => [
-                    'query' => $query,
-                    'variables' => $variables,
-                ],
-            ]);
+            try {
+                $response = $this->client->post('', [
+                    'json' => [
+                        'query' => $query,
+                        'variables' => $variables,
+                    ],
+                ]);
+            } catch (\GuzzleHttp\Exception\ServerException $e) {
+                // Retry on 502, 503, 504 errors
+                $statusCode = $e->getResponse()->getStatusCode();
+                if (in_array($statusCode, [502, 503, 504]) && $retryCount < $this->maxRetries) {
+                    $waitSeconds = pow(2, $retryCount) * 5; // Exponential backoff: 5s, 10s, 20s
+                    Log::warning("GitHub API returned $statusCode. Retrying in {$waitSeconds}s...");
+                    sleep($waitSeconds);
+                    $retryCount++;
+                    continue;
+                }
+                throw $e;
+            }
 
             $json = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
             $rate = $json['data']['rateLimit'] ?? null;
-            if ($rate && $rate['remaining'] === 0 && isset($rate['resetAt'])) {
-                try {
-                    $resetAt = new DateTime($rate['resetAt']);
-                    $waitSeconds = max($resetAt->getTimestamp() - time(), 1);
-                    Log::info("Github Rate limit exceeded. Waiting for $waitSeconds seconds.");
-                    sleep($waitSeconds);
-                } catch (Exception $e) {
-                    throw new RuntimeException("Invalid rateLimit.resetAt value: " . $rate['resetAt'] . ' ' . $e->getMessage());
-                }
+            if ($rate && isset($rate['remaining'])) {
+                // Proactive throttling based on remaining calls
+                if ($rate['remaining'] === 0 && isset($rate['resetAt'])) {
+                    try {
+                        $resetAt = new DateTime($rate['resetAt']);
+                        $waitSeconds = max($resetAt->getTimestamp() - time(), 1);
+                        Log::info("GitHub rate limit exceeded. Waiting for $waitSeconds seconds.");
+                        sleep($waitSeconds);
+                    } catch (Exception $e) {
+                        throw new RuntimeException("Invalid rateLimit.resetAt value: " . $rate['resetAt'] . ' ' . $e->getMessage());
+                    }
 
-                $retryCount++;
-                continue;
+                    $retryCount++;
+                    continue;
+                } elseif ($rate['remaining'] < 100) {
+                    Log::info("GitHub rate limit very low ({$rate['remaining']} remaining). Adding 10s delay.");
+                    sleep(10);
+                } elseif ($rate['remaining'] < 500) {
+                    Log::info("GitHub rate limit getting low ({$rate['remaining']} remaining). Adding 3s delay.");
+                    sleep(3);
+                }
             }
 
             if (isset($json['errors'])) {
@@ -107,7 +127,10 @@ class GitHubService
             'cursor' => $cursor,
         ]);
 
-        return $data['repository']['issues'] ?? [];
+        $issues = $data['repository']['issues'] ?? [];
+        $issues['rateLimit'] = $data['rateLimit'] ?? null;
+
+        return $issues;
     }
 
     public function fetchPullRequestCount(string $owner, string $repo): PullRequestCounts
@@ -132,7 +155,10 @@ class GitHubService
             'cursor' => $cursor,
         ]);
 
-        return $data['repository']['pullRequests'] ?? [];
+        $pullRequests = $data['repository']['pullRequests'] ?? [];
+        $pullRequests['rateLimit'] = $data['rateLimit'] ?? null;
+
+        return $pullRequests;
     }
 
     public function fetchInteractionsForIssue(string $owner, string $repo, int $issueNumber): array
@@ -231,6 +257,147 @@ class GitHubService
             'endCursor' => $pageInfo['endCursor'] ?? null,
             'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
         ];
+    }
+
+    /**
+     * Fetch issues with their interactions (comments, timeline events) in a single query.
+     * This eliminates N+1 API calls when syncing interactions.
+     */
+    public function fetchIssuesWithInteractions(string $owner, string $repo, ?string $cursor = null): array
+    {
+        $query = file_get_contents(resource_path('graphql/github/github_issues_with_interactions.graphql'));
+
+        $variables = [
+            'owner' => $owner,
+            'repo' => $repo,
+            'cursor' => $cursor,
+        ]);
+
+        $issues = $data['repository']['issues'] ?? [];
+        $rateLimit = $data['rateLimit'] ?? null;
+
+        return [
+            'nodes' => $issues['nodes'] ?? [],
+            'pageInfo' => $issues['pageInfo'] ?? [],
+            'totalCount' => $issues['totalCount'] ?? 0,
+            'rateLimit' => $rateLimit,
+        ];
+    }
+
+    /**
+     * Extract interactions from an issue node that includes inline comments and timeline items.
+     */
+    public function extractInteractionsFromIssue(array $issue): array
+    {
+        $interactions = [];
+        $author = $issue['author']['login'] ?? 'unknown';
+        $issueNumber = $issue['number'];
+
+        // Created issue
+        if (isset($issue['createdAt'])) {
+            $interactions[] = [
+                'author' => $author,
+                'type' => 'created_issue',
+                'date' => $issue['createdAt'],
+            ];
+        }
+
+        // Comments
+        foreach ($issue['comments']['nodes'] ?? [] as $comment) {
+            if (!isset($comment['createdAt'])) {
+                continue;
+            }
+            $interactions[] = [
+                'author' => $comment['author']['login'] ?? 'unknown',
+                'type' => 'comment',
+                'date' => $comment['createdAt'],
+            ];
+        }
+
+        // Timeline events
+        foreach ($issue['timelineItems']['nodes'] ?? [] as $event) {
+            if (!isset($event['createdAt'])) {
+                continue;
+            }
+
+            $interactions[] = [
+                'author' => $event['actor']['login'] ?? 'unknown',
+                'type' => strtolower(str_replace('Event', '', $event['__typename'])),
+                'date' => $event['createdAt'],
+            ];
+        }
+
+        return $interactions;
+    }
+
+    /**
+     * Fetch issues with their timeline events in a single query.
+     * This eliminates N+1 API calls when syncing events.
+     */
+    public function fetchIssuesWithEvents(string $owner, string $repo, ?string $cursor = null): array
+    {
+        $query = file_get_contents(resource_path('graphql/github/github_issues_with_events.graphql'));
+
+        $variables = [
+            'owner' => $owner,
+            'name' => $repo,
+            'cursor' => $cursor,
+        ];
+
+        $data = $this->executeGraphQLQuery($query, $variables);
+
+        $issues = $data['repository']['issues']['nodes'] ?? [];
+        $pageInfo = $data['repository']['issues']['pageInfo'] ?? [];
+
+        return [
+            'issues' => $issues,
+            'endCursor' => $pageInfo['endCursor'] ?? null,
+            'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
+        ];
+    }
+
+    public function fetchEventsForIssue(string $owner, string $repo, int $number): array
+    {
+        $restClient = new \GuzzleHttp\Client([
+            'base_uri' => 'https://api.github.com/',
+            'headers' => [
+                'Authorization' => "Bearer {$this->token}",
+                'Accept' => 'application/vnd.github.v3+json',
+                'User-Agent' => 'Laravel-GitHubSync/1.0',
+            ],
+        ]);
+
+        $issues = $data['repository']['issues'] ?? [];
+        $rateLimit = $data['rateLimit'] ?? null;
+
+        return [
+            'nodes' => $issues['nodes'] ?? [],
+            'pageInfo' => $issues['pageInfo'] ?? [],
+            'totalCount' => $issues['totalCount'] ?? 0,
+            'rateLimit' => $rateLimit,
+        ];
+    }
+
+    /**
+     * Extract events from an issue node that includes inline timeline items.
+     */
+    public function extractEventsFromIssue(array $issue): array
+    {
+        $events = [];
+
+        foreach ($issue['timelineItems']['nodes'] ?? [] as $event) {
+            if (!isset($event['createdAt'])) {
+                continue;
+            }
+
+            $events[] = [
+                'type' => strtolower(str_replace('Event', '', $event['__typename'])),
+                'actor' => $event['actor']['login'] ?? 'unknown',
+                'created_at' => $event['createdAt'],
+            ];
+        }
+
+        return $events;
     }
 
     public function fetchEventsForIssue(string $owner, string $repo, int $number): array

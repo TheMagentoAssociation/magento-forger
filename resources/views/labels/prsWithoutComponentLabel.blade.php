@@ -6,6 +6,11 @@
         $currentMonth = date('m');
     @endphp
     <div class="container">
+    @if(empty($prs))
+        <div class="alert alert-info text-center">
+            <h4>There is no data available, please ensure the import has run.</h4>
+        </div>
+    @else
         @foreach($prs as $year)
             <div class="row">
                 <div class="col-12">
@@ -35,5 +40,6 @@
                 @endforeach
             </div>
         @endforeach
+    @endif
     </div>
 @endsection
