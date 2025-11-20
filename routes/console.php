@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\SyncGitHubEvents;
 use App\Console\Commands\SyncGitHubInteractions;
 use App\Console\Commands\SyncGitHubIssues;
 use Illuminate\Support\Facades\Schedule;
@@ -23,7 +24,7 @@ Schedule::command(SyncGitHubPRs::class, ['--since' => '1 hour ago'])
     ->name('sync-github-prs')
     ->description('Sync GitHub Pull Requests using GraphQL');
 
-# Issue Syncs
+# Sync Issues
 Schedule::command(SyncGitHubIssues::class)
     ->weekly()
     ->withoutOverlapping()
@@ -40,9 +41,31 @@ Schedule::command(SyncGitHubIssues::class, ['--since' => '1 hour ago'])
     ->description('Sync GitHub Issues using GraphQL');
 
 ## schedule for SyncGitHubInteractions & SyncGithubEvents
+Schedule::command(SyncGitHubInteractions::class)
+    ->weekly()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->name('sync-github-interactions')
+    ->description('Full Sync GitHub Interactions using REST API');
+
 Schedule::command(SyncGitHubInteractions::class, ['--since' => '1 day ago'])
     ->daily()
     ->withoutOverlapping()
     ->runInBackground()
     ->name('sync-github-interactions --since "1 day ago"')
-    ->description('Sync GitHub Interactions using REST API');
+    ->description('Daily Sync GitHub Interactions using REST API');
+
+## schedule for SyncGitHubEvents
+Schedule::command(SyncGitHubEvents::class)
+    ->weekly()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->name('sync-github-interactions')
+    ->description('Full Sync GitHub Interactions using REST API');
+
+Schedule::command(SyncGitHubEvents::class, ['--since' => '1 day ago'])
+    ->daily()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->name('sync-github-interactions --since "1 day ago"')
+    ->description('Daily Sync GitHub Interactions using REST API');
