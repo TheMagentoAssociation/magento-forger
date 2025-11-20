@@ -69,6 +69,7 @@ class SyncGitHubPRs extends Command implements Isolatable
             try {
                 $response = $github->fetchPullRequests($owner, $name, $cursor);
                 $nodes = $response['nodes'] ?? [];
+
                 foreach ($nodes as $pr) {
                     $this->line("#{$pr['number']}: {$pr['title']} ({$pr['state']})");
                 }
@@ -89,7 +90,6 @@ class SyncGitHubPRs extends Command implements Isolatable
 
                 $this->info("Page $page" . ($totalPages ? " of $totalPages" : '') . " done. Cursor: $cursor");
                 $page++;
-                sleep(2); // Sleep to avoid hitting GH rate limits too quickly on additional pr info
             } catch (Throwable $e) {
                 $this->warn("Could not retrieve pull requests");
                 Log::warning('GitHub PR sync failed', ['exception' => $e]);

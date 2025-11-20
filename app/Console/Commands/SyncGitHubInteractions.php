@@ -50,46 +50,41 @@ class SyncGitHubInteractions extends Command
         $page = 1;
         $cursor = null;
         $hasNextPage = true;
+        $totalIssues = null;
+        $bar = null;
 
-        // Get initial count
-        try {
-            $issueCountObj = $github->fetchIssueCount($owner, $name);
-            $totalIssues = $issueCountObj->total ?? null;
-        } catch (Throwable $e) {
-            $this->warn("Could not retrieve issue count.");
-            Log::warning('GitHub interaction count failed', ['exception' => $e]);
-            return 1;
-        }
-
-        if (!$totalIssues) {
-            $this->error('No issues found or count unavailable.');
-            return 1;
-        }
-
-        $this->info("Fetching interactions for approximately $totalIssues issues...");
-
-        $bar = $this->output->createProgressBar($totalIssues);
-        $bar->start();
-
-        while ($hasNextPage && $this->checkRateLimit($github)) {
+        while ($hasNextPage) {
             try {
-                $response = $github->fetchIssues($owner, $name, $cursor);
+                // Fetch issues WITH interactions in a single query (eliminates N+1 problem)
+                $response = $github->fetchIssuesWithInteractions($owner, $name, $cursor);
                 $nodes = $response['nodes'] ?? [];
                 $cursor = $response['pageInfo']['endCursor'] ?? null;
                 $hasNextPage = $response['pageInfo']['hasNextPage'] ?? false;
 
+                // Initialize progress bar on first page
+                if ($bar === null) {
+                    $totalIssues = $response['totalCount'] ?? count($nodes);
+                    $this->info("Fetching interactions for approximately $totalIssues issues...");
+                    $bar = $this->output->createProgressBar($totalIssues);
+                    $bar->start();
+                }
+
                 $interactions = [];
+                $reachedCutoff = false;
 
                 foreach ($nodes as $issue) {
                     $updatedAt = Carbon::parse($issue['updatedAt']);
 
                     if ($cutoff && $updatedAt->lt($cutoff)) {
-                        $bar->advance();
-                        continue;
+                        // Issues are sorted by updatedAt DESC, so all remaining will be older
+                        $reachedCutoff = true;
+                        break;
                     }
 
                     $issueId = $issue['number'];
-                    $issueInteractions = $github->fetchInteractionsForIssue($owner, $name, $issueId);
+
+                    // Extract interactions from inline data (no API call needed)
+                    $issueInteractions = $github->extractInteractionsFromIssue($issue);
 
                     foreach ($issueInteractions as $interaction) {
                         $interactions[] = [
@@ -103,6 +98,11 @@ class SyncGitHubInteractions extends Command
                     $bar->advance();
                 }
 
+                if ($reachedCutoff) {
+                    $this->info("\nReached cutoff date, stopping sync.");
+                    break;
+                }
+
                 if (!empty($interactions)) {
                     $openSearch->indexBulk(
                         OpenSearchService::getIndexWithPrefix('interactions'),
@@ -112,27 +112,17 @@ class SyncGitHubInteractions extends Command
 
                 $page++;
             } catch (Throwable $e) {
-                $this->warn("Error syncing page $page: " . $e->getMessage());
+                $this->warn("\nError syncing page $page: " . $e->getMessage());
                 Log::warning('GitHub interaction sync error', ['exception' => $e]);
                 break;
             }
         }
 
-        $bar->finish();
+        if ($bar) {
+            $bar->finish();
+        }
         $this->info("\nDone syncing interactions.");
 
         return 0;
-    }
-
-    protected function checkRateLimit(GitHubService $github): bool
-    {
-        $limit = $github->getRateLimit();
-
-        if (!isset($limit['remaining']) || $limit['remaining'] < 100) {
-            $this->warn("Approaching rate limit. Stopping to avoid throttling.");
-            return false;
-        }
-
-        return true;
     }
 }
