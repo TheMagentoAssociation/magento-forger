@@ -29,6 +29,23 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             {!! $mainMenu !!}
         </div>
+        <div class="d-flex align-items-center gap-3">
+            @auth
+                @if(Auth::user()->is_admin)
+                    <a href="/admin" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-cog"></i> Admin
+                    </a>
+                @endif
+                <span class="text-white">
+                    {{ Auth::user()->name }} ({{ Auth::user()->github_username }})
+                </span>
+            @endauth
+
+            @guest
+                <a href="{{ route('github_login') }}" class="text-white text-decoration-none">Login with GitHub</a>
+            @endguest
+
+        </div>
     </div>
 </nav>
 @include('components.header')

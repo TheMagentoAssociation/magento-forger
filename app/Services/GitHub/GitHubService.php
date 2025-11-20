@@ -267,7 +267,7 @@ class GitHubService
     {
         $query = file_get_contents(resource_path('graphql/github/github_issues_with_interactions.graphql'));
 
-        $data = $this->executeGraphQLQuery($query, [
+        $variables = [
             'owner' => $owner,
             'repo' => $repo,
             'cursor' => $cursor,
@@ -338,10 +338,33 @@ class GitHubService
     {
         $query = file_get_contents(resource_path('graphql/github/github_issues_with_events.graphql'));
 
-        $data = $this->executeGraphQLQuery($query, [
+        $variables = [
             'owner' => $owner,
-            'repo' => $repo,
+            'name' => $repo,
             'cursor' => $cursor,
+        ];
+
+        $data = $this->executeGraphQLQuery($query, $variables);
+
+        $issues = $data['repository']['issues']['nodes'] ?? [];
+        $pageInfo = $data['repository']['issues']['pageInfo'] ?? [];
+
+        return [
+            'issues' => $issues,
+            'endCursor' => $pageInfo['endCursor'] ?? null,
+            'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
+        ];
+    }
+
+    public function fetchEventsForIssue(string $owner, string $repo, int $number): array
+    {
+        $restClient = new \GuzzleHttp\Client([
+            'base_uri' => 'https://api.github.com/',
+            'headers' => [
+                'Authorization' => "Bearer {$this->token}",
+                'Accept' => 'application/vnd.github.v3+json',
+                'User-Agent' => 'Laravel-GitHubSync/1.0',
+            ],
         ]);
 
         $issues = $data['repository']['issues'] ?? [];
