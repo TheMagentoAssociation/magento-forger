@@ -67,5 +67,13 @@ Schedule::command(SyncGitHubEvents::class, ['--since' => '1 day ago'])
     ->daily()
     ->withoutOverlapping()
     ->runInBackground()
-    ->name('sync-github-interactions --since "1 day ago"')
-    ->description('Daily Sync GitHub Interactions using REST API');
+    ->name('sync-github-events --since "1 day ago"')
+    ->description('Daily Sync GitHub Events using GraphQL');
+
+## Process interactions into points
+Schedule::command('opensearch:process-interactions')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->name('opensearch-process-interactions')
+    ->description('Process GitHub interactions and assign points');

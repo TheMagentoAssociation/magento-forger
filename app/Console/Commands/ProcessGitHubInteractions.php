@@ -98,8 +98,12 @@ class ProcessGitHubInteractions extends Command
                 $source['real_name'] = $realName;
                 $source['company_name'] = $companyName;
 
+                // Generate deterministic ID for upsert behavior (prevents duplicates)
+                $docId = sha1(json_encode($source, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+
                 $this->client->index([
                     'index' => OpenSearchService::getIndexWithPrefix($this->newIndex),
+                    'id' => $docId,
                     'body' => $source
                 ]);
 
