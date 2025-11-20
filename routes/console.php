@@ -7,15 +7,33 @@ use App\Console\Commands\SyncGitHubPRs;
 
 Schedule::command('model:prune')->daily();
 
+# PR Syncs
+Schedule::command(SyncGitHubPRs::class)
+    ->weekly()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->name('sync-github-prs-full')
+    ->description('Full Sync GitHub Pull Requests using GraphQL');
+
 Schedule::command(SyncGitHubPRs::class, ['--since' => '1 hour ago'])
     ->everyFifteenMinutes()
+    ->unlessBetween('23:40', '00:20')
     ->withoutOverlapping()
     ->runInBackground()
     ->name('sync-github-prs')
     ->description('Sync GitHub Pull Requests using GraphQL');
 
+# Issue Syncs
+Schedule::command(SyncGitHubIssues::class)
+    ->weekly()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->name('sync-github-issues-full')
+    ->description('Full Sync GitHub Issues using GraphQL');
+
 Schedule::command(SyncGitHubIssues::class, ['--since' => '1 hour ago'])
     ->everyFifteenMinutes()
+    ->unlessBetween('23:40', '00:20')
     ->withoutOverlapping()
     ->runInBackground()
     ->name('sync-github-issues --since "1 day ago"')
