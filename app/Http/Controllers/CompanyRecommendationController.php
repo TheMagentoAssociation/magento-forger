@@ -18,13 +18,16 @@ class CompanyRecommendationController extends Controller
             'company_name' => 'required|string|max:255',
         ]);
 
+        // Sanitize company name to prevent XSS
+        $companyName = strip_tags(trim($request->company_name));
+
         // Either create a new company or update if it already exists
         $company = Company::firstOrCreate(
-            ['name' => $request->company_name],
-            ['is_magento_member' => false]
+            ['name' => $companyName]
         );
 
-        // Mark as recommended
+        // Mark as recommended (using direct assignment to bypass guarded protection)
+        // This is intentional - users can recommend companies, admins set magento_member status
         $company->is_recommended = true;
         $company->save();
 

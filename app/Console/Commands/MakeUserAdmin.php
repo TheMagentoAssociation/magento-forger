@@ -44,7 +44,9 @@ class MakeUserAdmin extends Command
                 return SymfonyCommand::SUCCESS;
             }
 
-            $user->update(['is_admin' => true]);
+            // Use direct assignment to bypass mass assignment protection
+            $user->is_admin = true;
+            $user->save();
 
             $this->info("User {$email} is now an admin.");
 

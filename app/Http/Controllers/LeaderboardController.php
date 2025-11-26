@@ -63,4 +63,74 @@ class LeaderboardController extends Controller
         krsort($dataToDisplay);
         return view('leaderboard/leaderboard', ['data' => $dataToDisplay]);
     }
+
+    public function showMonth(Client $client, int $year): view
+    {
+        $params = [
+            'index' => OpenSearchService::getIndexWithPrefix('points'),
+            'body'  => [
+                'size' => 0,
+                'query' => [
+                    'bool' => [
+                        'filter' => [
+                            'script' => [
+                                'script' => [
+                                    'source' => "doc['interaction_date'].value.getYear() == params.year",
+                                    'lang'   => 'painless',
+                                    'params' => [
+                                        'year' => $year
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'aggs' => [
+                    'by_month' => [
+                        'terms' => [
+                            'script' => [
+                                'source' => "doc['interaction_date'].value.getMonthValue()",
+                                'lang'   => 'painless'
+                            ],
+                            'size'  => 12,
+                            'order' => [
+                                '_key' => 'asc'
+                            ]
+                        ],
+                        'aggs' => [
+                            'by_company' => [
+                                'terms' => [
+                                    'field' => 'company_name.keyword',
+                                    'size'  => 1000
+                                ],
+                                'aggs' => [
+                                    'total_points' => [
+                                        'sum' => [
+                                            'field' => 'points'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $result = $client->search($params);
+        $dataToDisplay = [];
+        $buckets = $result['aggregations']['by_month']['buckets'];
+
+        foreach ($buckets as $bucket) {
+            $monthlyData = [];
+            foreach ($bucket['by_company']['buckets'] as $companyBucket) {
+                $monthlyData[] = [
+                    'name' => $companyBucket['key'],
+                    'points' => (int)$companyBucket['total_points']['value'],
+                ];
+            }
+            $dataToDisplay[$bucket['key']] = $monthlyData;
+        }
+        ksort($dataToDisplay);
+        return view('leaderboard/monthly', ['data' => $dataToDisplay, 'year' => $year]);
+    }
 }

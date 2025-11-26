@@ -21,9 +21,25 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required(),
-                Forms\Components\TextInput::make('email')->required()->unique(ignoreRecord: true),
-                Forms\Components\TextInput::make('github_username')->required()->unique(ignoreRecord: true),
+                Forms\Components\Section::make('User Information')
+                    ->description('User data is synced from GitHub and cannot be edited manually.')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('email')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('github_username')
+                            ->label('GitHub Username')
+                            ->disabled()
+                            ->dehydrated(false),
+                        Forms\Components\TextInput::make('github_id')
+                            ->label('GitHub ID')
+                            ->disabled()
+                            ->dehydrated(false),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -40,6 +56,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -59,8 +76,14 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            // Users are created via GitHub OAuth only, not through admin panel
+            // 'create' => Pages\CreateUser::route('/create'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false; // Prevent user creation through admin panel
     }
 }

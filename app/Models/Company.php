@@ -12,8 +12,6 @@ class Company extends Model
 {
     protected $fillable = [
         'name', // Company name
-        'is_magento_member',
-        'is_recommended',
         'email',
         'phone',
         'website',
@@ -25,6 +23,14 @@ class Company extends Model
         'country_code',
         'logo',
     ];
+
+    /**
+     * The attributes that aren't mass assignable.
+     * These flags should only be set by admins through the Filament panel
+     *
+     * @var list<string>
+     */
+    protected $guarded = ['is_magento_member', 'is_recommended'];
 
     public function affiliations(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

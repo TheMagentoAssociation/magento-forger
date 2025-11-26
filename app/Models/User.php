@@ -30,8 +30,15 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'github_id',
         'github_username',
-        'is_admin',
     ];
+
+    /**
+     * The attributes that aren't mass assignable.
+     * is_admin should only be set via the MakeUserAdmin command
+     *
+     * @var list<string>
+     */
+    protected $guarded = ['is_admin'];
 
     /**
      * The attributes that should be hidden for serialization.
