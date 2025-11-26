@@ -39,6 +39,12 @@
                 <span class="text-white">
                     {{ Auth::user()->name }} ({{ Auth::user()->github_username }})
                 </span>
+                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
             @endauth
 
             @guest
@@ -50,7 +56,7 @@
 </nav>
 @include('components.header')
 
-<main role="main" class="flex-grow container mx-auto pt-4 px-3 px-md-4 py-6 transition-all duration-300 ease-in-out">
+<main role="main" class="flex-grow container mx-auto pt-4 px-3 px-md-4 pb-4 transition-all duration-300 ease-in-out mb-4">
     @yield('content')
 </main>
 

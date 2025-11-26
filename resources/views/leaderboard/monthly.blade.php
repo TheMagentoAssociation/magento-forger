@@ -1,56 +1,42 @@
 @extends('layouts.app')
 
-@push('head')
-<style>
-.leaderboard-year-header {
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-}
-.leaderboard-year-header:hover {
-    background-color: #f8f9fa !important;
-    transform: translateY(-2px);
-}
-.leaderboard-year-header:hover .card-title {
-    color: #0d6efd !important;
-}
-.leaderboard-year-header:hover .fa-chevron-right {
-    transform: translateX(4px);
-    color: #0d6efd;
-}
-.leaderboard-year-header .fa-chevron-right {
-    transition: transform 0.2s ease, color 0.2s ease;
-    opacity: 0.6;
-}
-</style>
-@endpush
-
 @section('content')
     @php
-        $currentYear = date('Y');
-        $currentMonth = date('m');
+        $monthNames = [
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December'
+        ];
     @endphp
     <div class="container">
         <div class="row mb-3">
             <div class="col-12">
-                <h2>Company Leaderboard</h2>
-                <p class="text-muted">Top companies by contribution points per year</p>
+                <a href="{{ route('leaderboard') }}" class="btn btn-sm btn-outline-secondary mb-3">
+                    <i class="fas fa-arrow-left"></i> Back to All Years
+                </a>
+                <h2>Company Leaderboard - {{ $year }}</h2>
+                <p class="text-muted">Top companies by contribution points per month</p>
             </div>
         </div>
         <div class="row g-4">
-        @foreach($data as $year => $companies)
+        @foreach($data as $monthNumber => $companies)
             @php
                 $unclaimedCompany = null;
             @endphp
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm">
-                    <a href="{{ route('leaderboard-month', ['year' => $year]) }}" class="text-decoration-none">
-                        <div class="card-header bg-white border-bottom leaderboard-year-header">
-                            <h5 class="card-title mb-0 fw-bold text-dark d-flex justify-content-between align-items-center">
-                                <span>{{ $year }}</span>
-                                <i class="fas fa-chevron-right"></i>
-                            </h5>
-                        </div>
-                    </a>
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0 fw-bold">{{ $monthNames[$monthNumber] }}</h5>
+                    </div>
                     <div class="card-body p-0">
                         <ul class="list-group list-group-flush">
                         @foreach($companies as $company)
