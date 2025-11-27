@@ -16,9 +16,16 @@ class AffiliationsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('company_id')->relationship('company', 'name'),
-                Forms\Components\DatePicker::make('start_date')->format('Y-m-d'),
-                Forms\Components\DatePicker::make('end_date')->format('Y-m-d'),
+                Forms\Components\Select::make('company_id')
+                    ->relationship('company', 'name', fn($query) => $query->where('status', 'approved')->orderBy('name'))
+                    ->searchable()
+                    ->required()
+                    ->label('Company'),
+                Forms\Components\DatePicker::make('start_date')
+                    ->format('Y-m-d')
+                    ->required(),
+                Forms\Components\DatePicker::make('end_date')
+                    ->format('Y-m-d'),
             ]);
     }
 

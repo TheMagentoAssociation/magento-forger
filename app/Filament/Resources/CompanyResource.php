@@ -3,9 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CompanyResource\Pages;
+use App\Filament\Resources\CompanyResource\RelationManagers;
 use App\Models\Company;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,7 +22,23 @@ class CompanyResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('status')
+                    ->options([
+                        'pending' => 'Pending Review',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->required()
+                    ->default('pending'),
+
                 Forms\Components\TextInput::make('name')->required()->unique(ignoreRecord: true),
+
+                Forms\Components\TextInput::make('linkedin_url')
+                    ->label('LinkedIn Company URL')
+                    ->url()
+                    ->maxLength(500)
+                    ->helperText('Validating the LinkedIn URL speeds up approval'),
+
                 Forms\Components\TextInput::make('email')->required()->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('website')->required()->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('phone')->required(),
@@ -28,15 +46,16 @@ class CompanyResource extends Resource
                 Forms\Components\TextInput::make('zip')->required(),
                 Forms\Components\TextInput::make('city')->required(),
                 Forms\Components\TextInput::make('state'),
+
                 Forms\Components\Select::make('country')
-                    ->options(function () {
-                        return collect(countries())
+                    ->options(
+                        collect(countries())
                             ->mapWithKeys(fn($country) => [
-                                $country['iso_3166_1_alpha3'] => $country['name']['common']
+                                $country['iso_3166_1_alpha3'] => $country['name'],
                             ])
                             ->sort()
-                            ->toArray();
-                    })
+                            ->toArray()
+                    )
                     ->searchable(),
 
                 Forms\Components\Toggle::make('is_magento_member')
@@ -56,18 +75,89 @@ class CompanyResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
 
+                Tables\Columns\BadgeColumn::make('status')
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'approved',
+                        'danger' => 'rejected',
+                    ]),
+
                 Tables\Columns\IconColumn::make('is_magento_member')
                     ->boolean()
                     ->label('Magento Member'),
 
                 Tables\Columns\IconColumn::make('is_recommended')
                     ->boolean()
-                    ->label('Recommended'),
+                    ->label('User Recommended'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ]),
             ])
+            ->defaultSort('created_at', 'desc')
             ->actions([
+                Tables\Actions\Action::make('approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn(Company $record) => $record->status === 'pending')
+                    ->requiresConfirmation()
+                    ->action(function (Company $record): void {
+                        $record->status = 'approved';
+                        $record->save();
+
+                        Notification::make()
+                            ->success()
+                            ->title('Company Approved')
+                            ->body("{$record->name} is now visible to all users")
+                            ->send();
+                    }),
+
+                Tables\Actions\Action::make('reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn(Company $record) => $record->status === 'pending')
+                    ->requiresConfirmation()
+                    ->action(function (Company $record): void {
+                        $record->status = 'rejected';
+                        $record->save();
+
+                        Notification::make()
+                            ->success()
+                            ->title('Company Rejected')
+                            ->body("{$record->name} has been rejected")
+                            ->send();
+                    }),
+
+                Tables\Actions\Action::make('merge')
+                    ->icon('heroicon-o-arrow-path')
+                    ->form([
+                        Forms\Components\Select::make('target_company_id')
+                            ->label('Merge into Company')
+                            ->options(Company::where('status', 'approved')->pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+                    ])
+                    ->action(function (Company $record, array $data): void {
+                        $targetCompany = Company::find($data['target_company_id']);
+
+                        // Transfer all affiliations
+                        $record->affiliations()->update(['company_id' => $targetCompany->id]);
+
+                        // Mark as rejected (using direct assignment since status is guarded)
+                        $record->status = 'rejected';
+                        $record->save();
+
+                        Notification::make()
+                            ->success()
+                            ->title('Company merged')
+                            ->body("{$record->name} merged into {$targetCompany->name}")
+                            ->send();
+                    }),
+
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -80,7 +170,7 @@ class CompanyResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\OwnersRelationManager::class,
         ];
     }
 

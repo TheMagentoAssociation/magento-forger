@@ -10,7 +10,7 @@ class EmploymentController extends Controller
     public function create()
     {
         return view('employment.form', [
-            'companies' => \App\Models\Company::all(),
+            'companies' => \App\Models\Company::where('status', 'approved')->orderBy('name')->get(),
             'affiliations' => auth()->user()->affiliations()->with('company')->get(),
         ]);
     }
@@ -58,7 +58,7 @@ class EmploymentController extends Controller
     public function edit($id)
     {
         $affiliation = auth()->user()->affiliations()->findOrFail($id);
-        $companies = \App\Models\Company::all();
+        $companies = \App\Models\Company::where('status', 'approved')->orderBy('name')->get();
 
         return view('employment.edit', compact('affiliation', 'companies'));
     }

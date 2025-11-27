@@ -16,8 +16,8 @@ Route::get('/api/universe-bar', [Controllers\UniverseBarController::class, 'rend
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
-    Route::get('/recommend-company', [Controllers\CompanyRecommendationController::class, 'create']);
-    Route::post('/recommend-company', [Controllers\CompanyRecommendationController::class, 'store'])->name('companies.recommend');
+    Route::post('/api/companies/propose', [Controllers\Api\CompanyProposalController::class, 'propose'])
+        ->middleware('throttle:30,60'); // 30 submissions per hour per user
 });
 
 // Login page (required by auth middleware)
@@ -28,7 +28,7 @@ Route::get('/login', function () {
 // Github Social Login
 Route::get('/auth/github', [Controllers\Auth\LoginController::class, 'redirectToGitHub'])->name('github_login');
 Route::get('/auth/github/callback', [Controllers\Auth\LoginController::class, 'handleGitHubCallback'])
-    ->middleware('throttle:20,1'); // Limit to 20 attempts per minute per IP
+    ->middleware('throttle:10,1'); // Limit to 10 attempts per minute per IP
 
 // Logout
 Route::post('/logout', function () {
@@ -45,4 +45,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/employment/{id}/edit', [Controllers\EmploymentController::class, 'edit'])->name('employment.edit');
     Route::put('/employment/{id}', [Controllers\EmploymentController::class, 'update'])->name('employment.update');
     Route::delete('/employment/{id}', [Controllers\EmploymentController::class, 'destroy'])->name('employment.destroy');
+
+    // Company Owner Management
+    Route::get('/my-companies', [Controllers\CompanyOwnerController::class, 'index'])->name('company-owner.index');
+    Route::get('/my-companies/{id}/edit', [Controllers\CompanyOwnerController::class, 'edit'])->name('company-owner.edit');
+    Route::put('/my-companies/{id}', [Controllers\CompanyOwnerController::class, 'update'])->name('company-owner.update');
 });
