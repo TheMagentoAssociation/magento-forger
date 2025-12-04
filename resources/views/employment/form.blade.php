@@ -361,20 +361,43 @@ document.getElementById('submit-proposed-company').addEventListener('click', fun
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Add new pending company to dropdown using Choices.js API
-            companySelect.setChoices([
-                { value: data.company.id, label: data.company.name, selected: true }
-            ], 'value', 'label', false);
+            // Check if this is a warning (existing pending company)
+            if (data.warning) {
+                // Add pending company to dropdown and auto-select it
+                companySelect.setChoices([
+                    { value: data.company.id, label: data.company.name, selected: true }
+                ], 'value', 'label', false);
 
-            // Hide propose form
-            new bootstrap.Collapse(document.getElementById('propose-company-section')).hide();
+                // Hide propose form
+                new bootstrap.Collapse(document.getElementById('propose-company-section')).hide();
 
-            // Clear form
-            clearProposeForm();
+                // Clear form
+                clearProposeForm();
 
-            // Show success message
-            showModal('Success', 'Company proposed! You can now use it. We\'ll review it shortly.', 'success');
+                // Show informational modal
+                showModal(
+                    'Company Already Submitted',
+                    data.message + ' We\'ve added it to your selection.',
+                    'info'
+                );
+            } else {
+                // Normal success - newly created company
+                // Add new pending company to dropdown using Choices.js API
+                companySelect.setChoices([
+                    { value: data.company.id, label: data.company.name, selected: true }
+                ], 'value', 'label', false);
+
+                // Hide propose form
+                new bootstrap.Collapse(document.getElementById('propose-company-section')).hide();
+
+                // Clear form
+                clearProposeForm();
+
+                // Show success message
+                showModal('Success', 'Company proposed! You can now use it. We\'ll review it shortly.', 'success');
+            }
         } else {
+            // Error cases (approved or rejected companies, validation errors)
             showModal('Error', data.message || 'Failed to propose company', 'error');
         }
     })
