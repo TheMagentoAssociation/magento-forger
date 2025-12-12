@@ -12,11 +12,6 @@ Route::get('labels/prsMissingComponent', [Controllers\LabelController::class, 'l
 Route::get('/api/charts/{method}', [Controllers\ChartController::class, 'dispatch']);
 Route::get('/api/universe-bar', [Controllers\UniverseBarController::class, 'render']);
 
-// Github Social Login
-Route::get('/auth/github', [Controllers\Auth\LoginController::class, 'redirectToGitHub'])->name('github_login');
-Route::get('/auth/github/callback', [Controllers\Auth\LoginController::class, 'handleGitHubCallback'])
-    ->middleware('throttle:10,1'); // Limit to 10 attempts per minute per IP
-
 // Login page (required by auth middleware)
 Route::get('/login', function () {
     return view('auth.login');
