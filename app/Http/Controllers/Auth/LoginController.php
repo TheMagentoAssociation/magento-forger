@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
@@ -9,11 +11,21 @@ use Laravel\Socialite\Facades\Socialite;
 
 class LoginController
 {
+    /**
+     * Redirect the user to GitHub for authentication.
+     *
+     * @return \Illuminate\Http\RedirectResponse|\Symfony\Component\HttpFoundation\RedirectResponse
+     */
     public function redirectToGitHub()
     {
         return Socialite::driver('github')->redirect();
     }
 
+    /**
+     * Handle GitHub callback after authentication
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function handleGitHubCallback()
     {
         try {
@@ -60,8 +72,14 @@ class LoginController
             ]);
             return redirect()->route('home')
                 ->withErrors(['error' => 'Authentication failed. Please try again.']);
+        } catch (\Throwable $e) {
+            Log::error('GitHub OAuth error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('home')
+                ->withErrors(['error' => 'Unable to authenticate with GitHub. Please try again.']);
         }
     }
 }
-
-
