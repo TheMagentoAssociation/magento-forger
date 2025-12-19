@@ -33,12 +33,12 @@ class MakeUserAdmin extends Command
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->error('Please enter a valid email address.');
 
-            return SymfonyCommand::FAILURE;
+            return 1;
         }
         try {
             $user = User::where('email', $email)->firstOrFail();
 
-            if ($user->is_admin) {
+            if ((bool) $user->is_admin) {
                 $this->warn("User {$email} is already an admin. No action taken");
 
                 return SymfonyCommand::SUCCESS;
@@ -50,15 +50,15 @@ class MakeUserAdmin extends Command
 
             $this->info("User {$email} is now an admin.");
 
-            return SymfonyCommand::SUCCESS;
+            return 0;
         } catch (ModelNotFoundException) {
             $this->error("User with email {$email} not found.");
 
-            return SymfonyCommand::FAILURE;
+            return 1;
         } catch (Exception $e) {
             $this->error("Failed to update user: " . $e->getMessage());
 
-            return SymfonyCommand::FAILURE;
+            return 1;
         }
     }
 }
