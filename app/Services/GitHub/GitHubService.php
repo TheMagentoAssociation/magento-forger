@@ -9,6 +9,7 @@ use DateTime;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use JsonException;
 use RuntimeException;
 
 class GitHubService
@@ -262,17 +263,20 @@ class GitHubService
     /**
      * Fetch issues with their interactions (comments, timeline events) in a single query.
      * This eliminates N+1 API calls when syncing interactions.
+     *
+     * @throws GitHubGraphQLException
+     * @throws JsonException
      */
     public function fetchIssuesWithInteractions(string $owner, string $repo, ?string $cursor = null): array
     {
         $query = file_get_contents(resource_path('graphql/github/github_issues_with_interactions.graphql'));
-
         $variables = [
             'owner' => $owner,
             'repo' => $repo,
             'cursor' => $cursor,
-        ]);
+        ];
 
+        $data = $this->executeGraphQLQuery($query, $variables);
         $issues = $data['repository']['issues'] ?? [];
         $rateLimit = $data['rateLimit'] ?? null;
 
@@ -353,28 +357,6 @@ class GitHubService
             'issues' => $issues,
             'endCursor' => $pageInfo['endCursor'] ?? null,
             'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
-        ];
-    }
-
-    public function fetchEventsForIssue(string $owner, string $repo, int $number): array
-    {
-        $restClient = new \GuzzleHttp\Client([
-            'base_uri' => 'https://api.github.com/',
-            'headers' => [
-                'Authorization' => "Bearer {$this->token}",
-                'Accept' => 'application/vnd.github.v3+json',
-                'User-Agent' => 'Laravel-GitHubSync/1.0',
-            ],
-        ]);
-
-        $issues = $data['repository']['issues'] ?? [];
-        $rateLimit = $data['rateLimit'] ?? null;
-
-        return [
-            'nodes' => $issues['nodes'] ?? [],
-            'pageInfo' => $issues['pageInfo'] ?? [],
-            'totalCount' => $issues['totalCount'] ?? 0,
-            'rateLimit' => $rateLimit,
         ];
     }
 
