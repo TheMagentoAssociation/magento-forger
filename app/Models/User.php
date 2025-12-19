@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+declare(strict_types=1);
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 /**
  * @mixin Builder
  */
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -28,6 +31,14 @@ class User extends Authenticatable
         'github_id',
         'github_username',
     ];
+
+    /**
+     * The attributes that aren't mass assignable.
+     * is_admin should only be set via the MakeUserAdmin command
+     *
+     * @var list<string>
+     */
+    protected $guarded = ['is_admin'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -50,5 +61,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return (bool)$this->getAttribute('is_admin');
     }
 }
