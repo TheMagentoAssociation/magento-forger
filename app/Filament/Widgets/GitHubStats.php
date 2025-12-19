@@ -120,14 +120,18 @@ class GitHubStats extends BaseWidget
                 ]
             ]
         ];
-        $data = $client->search('points', $params);
 
+        
+        $data = $client->search(OpenSearchService::getIndexWithPrefix('points'), $params);
+
+        $claimed = $data['aggregations']['claimed_users']['unique_real_names']['value'];
+        $unclaimed = $data['aggregations']['unclaimed_users']['unique_github_accounts']['value'];
+        $total = $claimed + $unclaimed;
+        
         return [
-            'unclaimed_users' => $data['aggregations']['unclaimed_users']['unique_github_accounts']['value'],
-            'claimed_users' => $data['aggregations']['claimed_users']['unique_real_names']['value'],
-            'percentClaimed' => ($data['aggregations']['claimed_users']['unique_real_names']['value'] /
-                    ($data['aggregations']['claimed_users']['unique_real_names']['value'] +
-                        $data['aggregations']['unclaimed_users']['unique_github_accounts']['value'])) * 100
+            'unclaimed_users' => $unclaimed,
+            'claimed_users' => $claimed,
+            'percentClaimed' => $total > 0 ? ($claimed / $total) * 100 : 0,
         ];
     }
 }
