@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Services\Search\QueryBuilder;
 use App\Services\Search\OpenSearchService;
@@ -10,9 +9,8 @@ use App\DataTransferObjects\Search\Aggregation;
 
 class WelcomeController extends Controller
 {
-    public function index(OpenSearchService $search, Request $request): View
+    public function index(OpenSearchService $search): View
     {
-        $user = auth()->user();
         $prBuilder = new QueryBuilder();
         $prBuilder
             ->addAggregation(new Aggregation(
