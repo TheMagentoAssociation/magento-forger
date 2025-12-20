@@ -9,6 +9,8 @@ use Spatie\Menu\Laravel\Link;
 
 class MainMenu
 {
+    private const MENU_ROUTE_PATTERN = '/^(home|issues|prs|labels)(-[\w]+)?$/';
+
     public static function build(): Menu
     {
         $currentRoute = Route::currentRouteName();
@@ -20,7 +22,7 @@ class MainMenu
                 return empty($params) && !empty($route->getName());
             })
             ->map(fn($route) => $route->getName())
-            ->filter(fn($name) => preg_match('/^(home|issues|prs|labels)(-[\w]+)?$/', $name));
+            ->filter(fn($name) => preg_match(self::MENU_ROUTE_PATTERN, $name));
 
         $menu = Menu::new()
             ->addClass('navbar-nav me-auto mb-2 mb-lg-0')
