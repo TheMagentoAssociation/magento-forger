@@ -83,6 +83,12 @@ class MainMenu
         return RouteLabelHelper::formatLabel($routeName);
     }
 
+    /**
+     * Check if a route has no required parameters and has a name.
+     *
+     * @param \Illuminate\Routing\Route $route The route to check
+     * @return bool True if the route has no required parameters and has a name
+     */
     private static function hasNoRequiredParameters($route): bool
     {
         $params = $route->parameterNames();
