@@ -9,7 +9,6 @@ use DateTime;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
-use JsonException;
 use RuntimeException;
 
 class GitHubService
@@ -263,20 +262,17 @@ class GitHubService
     /**
      * Fetch issues with their interactions (comments, timeline events) in a single query.
      * This eliminates N+1 API calls when syncing interactions.
-     *
-     * @throws GitHubGraphQLException
-     * @throws JsonException
      */
     public function fetchIssuesWithInteractions(string $owner, string $repo, ?string $cursor = null): array
     {
         $query = file_get_contents(resource_path('graphql/github/github_issues_with_interactions.graphql'));
-        $variables = [
+
+        $data = $this->executeGraphQLQuery($query, [
             'owner' => $owner,
             'repo' => $repo,
             'cursor' => $cursor,
-        ];
+        ]);
 
-        $data = $this->executeGraphQLQuery($query, $variables);
         $issues = $data['repository']['issues'] ?? [];
         $rateLimit = $data['rateLimit'] ?? null;
 
@@ -342,21 +338,20 @@ class GitHubService
     {
         $query = file_get_contents(resource_path('graphql/github/github_issues_with_events.graphql'));
 
-        $variables = [
+        $data = $this->executeGraphQLQuery($query, [
             'owner' => $owner,
-            'name' => $repo,
+            'repo' => $repo,
             'cursor' => $cursor,
-        ];
+        ]);
 
-        $data = $this->executeGraphQLQuery($query, $variables);
-
-        $issues = $data['repository']['issues']['nodes'] ?? [];
-        $pageInfo = $data['repository']['issues']['pageInfo'] ?? [];
+        $issues = $data['repository']['issues'] ?? [];
+        $rateLimit = $data['rateLimit'] ?? null;
 
         return [
-            'issues' => $issues,
-            'endCursor' => $pageInfo['endCursor'] ?? null,
-            'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
+            'nodes' => $issues['nodes'] ?? [],
+            'pageInfo' => $issues['pageInfo'] ?? [],
+            'totalCount' => $issues['totalCount'] ?? 0,
+            'rateLimit' => $rateLimit,
         ];
     }
 

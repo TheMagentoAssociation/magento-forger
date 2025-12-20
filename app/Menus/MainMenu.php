@@ -14,13 +14,9 @@ class MainMenu
         $currentRoute = Route::currentRouteName();
 
         $routes = collect(Route::getRoutes())
-            ->filter(function($route) {
-                // Exclude routes with required parameters
-                $params = $route->parameterNames();
-                return empty($params) && !empty($route->getName());
-            })
             ->map(fn($route) => $route->getName())
-            ->filter(fn($name) => preg_match('/^(home|issues|prs|labels|employment|leaderboard)(-[\w]+)?$/', $name));
+            ->filter()
+            ->filter(fn($name) => !empty($name) && preg_match('/^(home|issues|prs|labels)(-[\w]+)?$/', $name));
 
         $menu = Menu::new()
             ->addClass('navbar-nav me-auto mb-2 mb-lg-0')
