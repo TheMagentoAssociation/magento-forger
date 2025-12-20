@@ -1,33 +1,21 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @mixin Builder
  */
 class Company extends Model
 {
-    protected $fillable = [
-        'name', // Company name
-        'email',
-        'phone',
-        'website',
-        'linkedin_url', // LinkedIn company page URL
-        'address',
-        'zip',
-        'city',
-        'state',
-        'country',
-        'country_code',
-        'logo',
-    ];
-
     /**
      * The attributes that aren't mass assignable.
-     * These flags should only be set by admins through the Filament panel
+     * These flags should only be set by admins through the Filament panel.
      *
      * @var list<string>
      */
@@ -42,13 +30,13 @@ class Company extends Model
         'status' => 'pending',
     ];
 
-    public function affiliations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function affiliations(): HasMany
     {
-        return $this->hasMany(\App\Models\CompanyAffiliation::class);
+        return $this->hasMany(CompanyAffiliation::class);
     }
 
-    public function owners(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function owners(): BelongsToMany
     {
-        return $this->belongsToMany(\App\Models\User::class, 'company_owners')->withTimestamps();
+        return $this->belongsToMany(User::class, 'company_owners')->withTimestamps();
     }
 }
