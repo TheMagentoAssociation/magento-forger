@@ -28,6 +28,9 @@ class ProcessGitHubInteractions extends Command
         $this->client = app(Client::class);
     }
 
+    /**
+     * @throws \JsonException
+     */
     public function handle(): void
     {
         // todo: move logic into a separate class
