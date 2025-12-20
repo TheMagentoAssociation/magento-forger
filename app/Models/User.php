@@ -63,6 +63,22 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    public function affiliations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\CompanyAffiliation::class);
+    }
+
+    public function companies(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\Company::class, 'company_owners')->withTimestamps();
+    }
+
+    // Alias for clarity when accessing owned companies
+    public function ownedCompanies(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->companies();
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return (bool)$this->getAttribute('is_admin');

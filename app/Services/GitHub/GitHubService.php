@@ -9,6 +9,7 @@ use DateTime;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use JsonException;
 use RuntimeException;
 
 class GitHubService
@@ -262,17 +263,20 @@ class GitHubService
     /**
      * Fetch issues with their interactions (comments, timeline events) in a single query.
      * This eliminates N+1 API calls when syncing interactions.
+     *
+     * @throws GitHubGraphQLException
+     * @throws JsonException
      */
     public function fetchIssuesWithInteractions(string $owner, string $repo, ?string $cursor = null): array
     {
         $query = file_get_contents(resource_path('graphql/github/github_issues_with_interactions.graphql'));
-
-        $data = $this->executeGraphQLQuery($query, [
+        $variables = [
             'owner' => $owner,
             'repo' => $repo,
             'cursor' => $cursor,
-        ]);
+        ];
 
+        $data = $this->executeGraphQLQuery($query, $variables);
         $issues = $data['repository']['issues'] ?? [];
         $rateLimit = $data['rateLimit'] ?? null;
 
@@ -338,20 +342,21 @@ class GitHubService
     {
         $query = file_get_contents(resource_path('graphql/github/github_issues_with_events.graphql'));
 
-        $data = $this->executeGraphQLQuery($query, [
+        $variables = [
             'owner' => $owner,
-            'repo' => $repo,
+            'name' => $repo,
             'cursor' => $cursor,
-        ]);
+        ];
 
-        $issues = $data['repository']['issues'] ?? [];
-        $rateLimit = $data['rateLimit'] ?? null;
+        $data = $this->executeGraphQLQuery($query, $variables);
+
+        $issues = $data['repository']['issues']['nodes'] ?? [];
+        $pageInfo = $data['repository']['issues']['pageInfo'] ?? [];
 
         return [
-            'nodes' => $issues['nodes'] ?? [],
-            'pageInfo' => $issues['pageInfo'] ?? [],
-            'totalCount' => $issues['totalCount'] ?? 0,
-            'rateLimit' => $rateLimit,
+            'issues' => $issues,
+            'endCursor' => $pageInfo['endCursor'] ?? null,
+            'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
         ];
     }
 
