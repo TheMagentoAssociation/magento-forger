@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
@@ -38,7 +39,6 @@ class AdminPanelProvider extends PanelProvider
 {
     /**
      * Configure the Filament admin panel
-     *
      * Sets up the admin panel with the following configuration:
      * - Panel ID: 'admin'
      * - Path: /admin
@@ -50,13 +50,13 @@ class AdminPanelProvider extends PanelProvider
      * - Custom navigation item to return to main site
      * - Standard Laravel middleware stack
      * - Filament authentication middleware
-     *
      * Resources are automatically discovered from app/Filament/Resources
      * Pages are automatically discovered from app/Filament/Pages
      * Widgets are automatically discovered from app/Filament/Widgets
      *
      * @param Panel $panel The Filament panel instance to configure
      * @return Panel The configured panel instance
+     * @throws \Exception
      */
     public function panel(Panel $panel): Panel
     {
