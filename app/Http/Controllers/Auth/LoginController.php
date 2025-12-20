@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
@@ -28,6 +29,7 @@ class LoginController
     {
         try {
             $githubUser = Socialite::driver('github')->user();
+
             // GitHub returns private emails by default with user:email scope
             // Only fall back if GitHub truly has no verified email (very rare)
             $email = $githubUser->getEmail();

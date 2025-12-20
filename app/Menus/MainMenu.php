@@ -9,14 +9,16 @@ use Spatie\Menu\Laravel\Link;
 
 class MainMenu
 {
+    private const MENU_ROUTE_PATTERN = '/^(home|issues|prs|labels)(-[\w]+)?$/';
+
     public static function build(): Menu
     {
         $currentRoute = Route::currentRouteName();
 
         $routes = collect(Route::getRoutes())
+            ->filter(fn($route) => self::hasNoRequiredParameters($route))
             ->map(fn($route) => $route->getName())
-            ->filter()
-            ->filter(fn($name) => !empty($name) && preg_match('/^(home|issues|prs|labels)(-[\w]+)?$/', $name));
+            ->filter(fn($name) => preg_match(self::MENU_ROUTE_PATTERN, $name));
 
         $menu = Menu::new()
             ->addClass('navbar-nav me-auto mb-2 mb-lg-0')
@@ -81,5 +83,17 @@ class MainMenu
     private static function formatLabel(string $routeName): string
     {
         return RouteLabelHelper::formatLabel($routeName);
+    }
+
+    /**
+     * Check if a route has no required parameters and has a name.
+     *
+     * @param \Illuminate\Routing\Route $route The route to check
+     * @return bool True if the route has no required parameters and has a name
+     */
+    private static function hasNoRequiredParameters($route): bool
+    {
+        $params = $route->parameterNames();
+        return empty($params) && !empty($route->getName());
     }
 }
