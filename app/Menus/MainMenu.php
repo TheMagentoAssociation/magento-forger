@@ -16,11 +16,7 @@ class MainMenu
         $currentRoute = Route::currentRouteName();
 
         $routes = collect(Route::getRoutes())
-            ->filter(function($route) {
-                // Exclude routes with required parameters
-                $params = $route->parameterNames();
-                return empty($params) && !empty($route->getName());
-            })
+            ->filter(fn($route) => self::hasNoRequiredParameters($route))
             ->map(fn($route) => $route->getName())
             ->filter(fn($name) => preg_match(self::MENU_ROUTE_PATTERN, $name));
 
@@ -87,5 +83,17 @@ class MainMenu
     private static function formatLabel(string $routeName): string
     {
         return RouteLabelHelper::formatLabel($routeName);
+    }
+
+    /**
+     * Check if a route has no required parameters and has a name.
+     *
+     * @param \Illuminate\Routing\Route $route The route to check
+     * @return bool True if the route has no required parameters and has a name
+     */
+    private static function hasNoRequiredParameters($route): bool
+    {
+        $params = $route->parameterNames();
+        return empty($params) && !empty($route->getName());
     }
 }
