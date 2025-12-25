@@ -13,6 +13,12 @@ Route::get('labels/prsMissingComponent', [Controllers\LabelController::class, 'l
 Route::get('/api/charts/{method}', [Controllers\ChartController::class, 'dispatch']);
 Route::get('/api/universe-bar', [Controllers\UniverseBarController::class, 'render']);
 
+// Authenticated Routes
+Route::middleware(['auth'])->group(function () {
+    Route::post('/api/companies/propose', [Controllers\Api\CompanyProposalController::class, 'propose'])
+        ->middleware('throttle:30,60'); // 30 submissions per hour per user
+});
+
 // Login page (required by auth middleware)
 Route::get('/login', function () {
     return view('auth.login');
@@ -30,3 +36,10 @@ Route::post('/logout', function () {
     request()->session()->regenerateToken();
     return redirect('/');
 })->name('logout');
+
+Route::middleware('auth')->group(function () {
+    // Company Owner Management
+    Route::get('/my-companies', [Controllers\CompanyOwnerController::class, 'index'])->name('company-owner.index');
+    Route::get('/my-companies/{id}/edit', [Controllers\CompanyOwnerController::class, 'edit'])->name('company-owner.edit');
+    Route::put('/my-companies/{id}', [Controllers\CompanyOwnerController::class, 'update'])->name('company-owner.update');
+});
