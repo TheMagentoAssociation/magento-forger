@@ -8,6 +8,8 @@ class RouteLabelHelper
     private static array $customLabels = [
         // Add your custom mappings here
         'prs' => 'PRs',
+        'company-owner.index' => 'My Companies',
+        'company-owner.edit' => 'Edit Company',
     ];
 
     public static function formatLabel(string $routeName): string
