@@ -13,6 +13,12 @@ Route::get('labels/prsMissingComponent', [Controllers\LabelController::class, 'l
 Route::get('/api/charts/{method}', [Controllers\ChartController::class, 'dispatch']);
 Route::get('/api/universe-bar', [Controllers\UniverseBarController::class, 'render']);
 
+// Authenticated Routes
+Route::middleware(['auth'])->group(function () {
+    Route::post('/api/companies/propose', [Controllers\Api\CompanyProposalController::class, 'propose'])
+        ->middleware('throttle:30,60'); // 30 submissions per hour per user
+});
+
 // Login page (required by auth middleware)
 Route::get('/login', function () {
     return view('auth.login');
@@ -30,3 +36,13 @@ Route::post('/logout', function () {
     request()->session()->regenerateToken();
     return redirect('/');
 })->name('logout');
+
+// Render employment form
+Route::middleware('auth')->group(function () {
+    Route::get('/employment', [Controllers\EmploymentController::class, 'create'])->name('employment');
+    Route::post('/employment', [Controllers\EmploymentController::class, 'store']);
+    Route::get('/employment/{id}/edit', [Controllers\EmploymentController::class, 'edit'])->name('employment.edit');
+    Route::put('/employment/{id}', [Controllers\EmploymentController::class, 'update'])->name('employment.update');
+    Route::delete('/employment/{id}', [Controllers\EmploymentController::class, 'destroy'])->name('employment.destroy');
+
+});
