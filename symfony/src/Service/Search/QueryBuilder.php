@@ -1,11 +1,5 @@
 <?php
-/**
- * Created by Qoliber
- *
- * @category    Qoliber
- * @package     Qoliber_MagentoForger
- * @author      Jakub Winkler <jwinkler@qoliber.com>
- */
+// Symfony migrated app - by Jakub Winkler <jwinkler@qoliber.com>
 
 declare(strict_types=1);
 
