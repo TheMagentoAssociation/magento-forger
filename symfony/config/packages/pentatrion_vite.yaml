@@ -1,0 +1,10 @@
+pentatrion_vite:
+    public_directory: public
+    build_directory: build
+    default_build: app
+    builds:
+        app:
+            script_attributes:
+                defer: true
+            link_attributes:
+                media: all

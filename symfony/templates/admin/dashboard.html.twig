@@ -1,0 +1,44 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}Magento Forger Dashboard{% endblock %}
+
+{% block main %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">Welcome to Magento Forger Admin</h1>
+                <p class="lead">Manage users, companies, and affiliations from this dashboard.</p>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fa fa-users me-2"></i>Users</h5>
+                        <p class="card-text">Manage user accounts and admin privileges.</p>
+                        <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\UserCrudController') }}" class="btn btn-primary">Manage Users</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fa fa-building me-2"></i>Companies</h5>
+                        <p class="card-text">Manage company profiles and information.</p>
+                        <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\CompanyCrudController') }}" class="btn btn-primary">Manage Companies</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fa fa-handshake me-2"></i>Affiliations</h5>
+                        <p class="card-text">Link users to their company affiliations.</p>
+                        <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\CompanyAffiliationCrudController') }}" class="btn btn-primary">Manage Affiliations</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% macro menu(item, options, matcher) %}
+    {% import _self as knp_menu %}
+    {% if item.displayed %}
+        {%- set attributes = item.attributes %}
+        {%- set is_dropdown = attributes.class is defined and 'dropdown' in attributes.class %}
+        <li{% with {attr: attributes} %}{{ block('attributes') }}{% endwith %}>
+            {%- set link_attributes = item.linkAttributes %}
+            <a href="{{ item.uri }}"{% with {attr: link_attributes} %}{{ block('attributes') }}{% endwith %}>
+                {{- item.label -}}
+            </a>
+            {% if is_dropdown and item.hasChildren %}
+                <ul class="dropdown-menu">
+                    {% for child in item.children %}
+                        {% if child.displayed %}
+                            <li><a href="{{ child.uri }}" class="dropdown-item{% if matcher.isCurrent(child) %} active{% endif %}">{{ child.label }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </li>
+    {% endif %}
+{% endmacro %}
+
+{% block root %}
+    {% set listAttributes = item.childrenAttributes %}
+    <ul{% with {attr: listAttributes} %}{{ block('attributes') }}{% endwith %}>
+        {% for child in item.children %}
+            {{ _self.menu(child, options, matcher) }}
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block attributes %}
+    {% for name, value in attr %}{% if value is not none and value is not same as(false) %} {{ name }}="{{ value is same as(true) ? name : value }}"{% endif %}{% endfor %}
+{% endblock %}
