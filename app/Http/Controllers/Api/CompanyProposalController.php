@@ -38,7 +38,6 @@ class CompanyProposalController extends Controller
 
         // Sanitize company name (defense in depth)
         $companyName = strip_tags(trim($request->name));
-        $companyName = htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8');
 
         // Validate minimum meaningful content
         if (strlen($companyName) < 2) {
