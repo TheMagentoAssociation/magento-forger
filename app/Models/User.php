@@ -8,6 +8,8 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -61,6 +63,22 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function affiliations(): HasMany
+    {
+        return $this->hasMany(CompanyAffiliation::class);
+    }
+
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class, 'company_owners')->withTimestamps();
+    }
+
+    // Alias for clarity when accessing owned companies
+    public function ownedCompanies(): BelongsToMany
+    {
+        return $this->companies();
     }
 
     public function canAccessPanel(Panel $panel): bool
