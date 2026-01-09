@@ -65,7 +65,7 @@ class CompanyResource extends Resource
                     ->label('Recommended by Users'),
 
                 Forms\Components\FileUpload::make('logo')
-                ->acceptedFileTypes(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
+                    ->acceptedFileTypes(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
             ]);
     }
 
