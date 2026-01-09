@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CompanyProposalController extends Controller
 {
@@ -165,9 +167,9 @@ class CompanyProposalController extends Controller
                     'status' => $company->status,
                 ],
             ]);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             // Log the actual error for debugging
-            \Log::error('Company proposal failed', [
+            Log::error('Company proposal failed', [
                 'error' => $e->getMessage(),
                 'company_name' => $companyName,
             ]);
