@@ -38,7 +38,7 @@ class CompanyOwnerController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:companies,name,' . $id,
             'email' => 'required|email|max:255|unique:companies,email,' . $id,
-            'phone' => 'required|string|max:50',
+            'phone' => 'required|string|max:50|unique:companies,phone,' . $id,
             'website' => 'required|url|max:255|unique:companies,website,' . $id,
             'linkedin_url' => 'nullable|url|max:500',
             'address' => 'required|string|max:255',
