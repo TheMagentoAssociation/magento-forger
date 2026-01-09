@@ -137,24 +137,22 @@ class CompanyResource extends Resource
                     ->form([
                         Forms\Components\Select::make('target_company_id')
                             ->label('Merge into Company')
-                            ->options(Company::where('status', 'approved')->pluck('name', 'id'))
+                            ->options(fn(Company $record) =>
+                            Company::where('status', 'approved')
+                                ->whereNot('id', $record->id)
+                                ->pluck('name', 'id')
+                            )
                             ->searchable()
                             ->required(),
                     ])
                     ->action(function (Company $record, array $data): void {
-                        $targetCompany = Company::find($data['target_company_id']);
-
-                        // Transfer all affiliations
-                        $record->affiliations()->update(['company_id' => $targetCompany->id]);
-
-                        // Mark as rejected (using direct assignment since status is guarded)
-                        $record->status = 'rejected';
-                        $record->save();
+                        $record->affiliations()->update(['company_id' => $data['target_company_id']]);
+                        $record->update(['status' => 'rejected']);
 
                         Notification::make()
                             ->success()
                             ->title('Company merged')
-                            ->body("{$record->name} merged into {$targetCompany->name}")
+                            ->body("{$record->name} merged into " . Company::find($data['target_company_id'])->name)
                             ->send();
                     }),
 
