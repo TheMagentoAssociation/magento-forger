@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\Search\OpenSearchService;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 use OpenSearch\Client;
 
@@ -31,7 +30,10 @@ class LeaderboardController extends Controller
                             'by_company' => [
                                 'terms' => [
                                     'field' => 'company_name.keyword',
-                                    'size'  => 1000
+                                    'size'  => 1000,
+                                    'order' => [
+                                        'total_points' => 'desc'
+                                    ]
                                 ],
                                 'aggs' => [
                                     'total_points' => [
@@ -101,7 +103,10 @@ class LeaderboardController extends Controller
                             'by_company' => [
                                 'terms' => [
                                     'field' => 'company_name.keyword',
-                                    'size'  => 1000
+                                    'size'  => 1000,
+                                    'order' => [
+                                        'total_points' => 'desc'
+                                    ]
                                 ],
                                 'aggs' => [
                                     'total_points' => [
