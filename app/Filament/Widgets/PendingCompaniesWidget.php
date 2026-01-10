@@ -32,7 +32,7 @@ class PendingCompaniesWidget extends BaseWidget
                     ->label('LinkedIn')
                     ->formatStateUsing(fn($state) => $state ? '✓ Provided' : '—')
                     ->color(fn($state) => $state ? 'success' : 'gray')
-                    ->url(fn($record) => $record->linkedin_url, shouldOpenInNewTab: true),
+                    ->url(fn($record) => $record->linkedin_url ?: null, shouldOpenInNewTab: true),
 
                 Tables\Columns\IconColumn::make('is_recommended')
                     ->label('User Proposed')
