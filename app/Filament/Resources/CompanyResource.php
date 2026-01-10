@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class CompanyResource extends Resource
 {
@@ -147,13 +148,27 @@ class CompanyResource extends Resource
                             ->required(),
                     ])
                     ->action(function (Company $record, array $data): void {
-                        $record->affiliations()->update(['company_id' => $data['target_company_id']]);
+                        $targetCompanyId = $data['target_company_id'];
+
+                        // Get user IDs that already have company_affiliations with target company
+                        $existingUserIds = DB::table('company_affiliations')
+                            ->where('company_id', $targetCompanyId)
+                            ->pluck('user_id');
+
+                        // Delete affiliations that would create duplicates
+                        $record->affiliations()
+                            ->whereIn('user_id', $existingUserIds)
+                            ->delete();
+
+                        // Move remaining affiliations to target company
+                        $record->affiliations()->update(['company_id' => $targetCompanyId]);
+
                         $record->update(['status' => 'rejected']);
 
                         Notification::make()
                             ->success()
                             ->title('Company merged')
-                            ->body("{$record->name} merged into " . Company::find($data['target_company_id'])->name)
+                            ->body("{$record->name} merged into " . Company::find($targetCompanyId)->name)
                             ->send();
                     }),
 
