@@ -48,7 +48,8 @@ class CompanyResource extends Resource
                 Forms\Components\TextInput::make('city')->required(),
                 Forms\Components\TextInput::make('state'),
 
-                Forms\Components\Select::make('country')
+                Forms\Components\Select::make('country_code')
+                    ->label('Country')
                     ->options(
                         collect(countries())
                             ->mapWithKeys(fn($country) => [
