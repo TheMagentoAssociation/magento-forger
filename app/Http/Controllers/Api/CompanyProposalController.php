@@ -33,6 +33,7 @@ class CompanyProposalController extends Controller
             'city' => ['nullable', 'string', 'max:100'],
             'state' => ['nullable', 'string', 'max:100'],
             'zip' => ['nullable', 'string', 'max:20'],
+            'country_code' => ['nullable', 'string', 'max:3'],
         ], [
             'name.regex' => 'Company name contains invalid characters.',
             'linkedin_url.regex' => 'Please provide a valid LinkedIn company page URL.',
@@ -143,6 +144,9 @@ class CompanyProposalController extends Controller
         $providedZip = trim($request->input('zip', ''));
         $zip = ! empty($providedZip) ? strip_tags($providedZip) : '00000';
 
+        $providedCountryCode = trim($request->input('country_code', ''));
+        $countryCode = ! empty($providedCountryCode) ? strip_tags($providedCountryCode) : null;
+
         // Create pending company
         try {
             $company = Company::create([
@@ -155,6 +159,7 @@ class CompanyProposalController extends Controller
                 'city' => $city,
                 'state' => $state,
                 'zip' => $zip,
+                'country_code' => $countryCode,
                 'status' => 'pending',
                 'is_recommended' => true,
             ]);

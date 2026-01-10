@@ -214,6 +214,16 @@
                             </div>
                         </div>
 
+                        <div class="mb-3">
+                            <label>Country</label>
+                            <select id="proposed_company_country_code" class="form-control">
+                                <option value="">Select a country</option>
+                                @foreach(collect(countries())->sortBy('name') as $country)
+                                    <option value="{{ $country['iso_3166_1_alpha3'] }}">{{ $country['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <button type="button" id="submit-proposed-company" class="btn btn-sm btn-success">
                             Submit for Approval
                         </button>
@@ -314,6 +324,7 @@ function clearProposeForm() {
     document.getElementById('proposed_company_city').value = '';
     document.getElementById('proposed_company_state').value = '';
     document.getElementById('proposed_company_zip').value = '';
+    document.getElementById('proposed_company_country_code').value = '';
 }
 
 // Hide propose company form
@@ -333,6 +344,7 @@ document.getElementById('submit-proposed-company').addEventListener('click', fun
     const city = document.getElementById('proposed_company_city').value.trim();
     const state = document.getElementById('proposed_company_state').value.trim();
     const zip = document.getElementById('proposed_company_zip').value.trim();
+    const countryCode = document.getElementById('proposed_company_country_code').value.trim();
 
     if (!name) {
         showModal('Validation Error', 'Please enter a company name', 'error');
@@ -355,7 +367,8 @@ document.getElementById('submit-proposed-company').addEventListener('click', fun
             address: address,
             city: city,
             state: state,
-            zip: zip
+            zip: zip,
+            country_code: countryCode
         })
     })
     .then(response => response.json())
