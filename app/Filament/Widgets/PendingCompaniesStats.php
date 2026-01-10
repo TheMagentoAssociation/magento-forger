@@ -13,9 +13,14 @@ class PendingCompaniesStats extends BaseWidget
 
     protected function getStats(): array
     {
-        $pendingCount = Company::where('status', 'pending')->count();
-        $approvedCount = Company::where('status', 'approved')->count();
-        $rejectedCount = Company::where('status', 'rejected')->count();
+        $statusCounts = Company::selectRaw('status, COUNT(*) as count')
+            ->whereIn('status', ['pending', 'approved', 'rejected'])
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $pendingCount = $statusCounts['pending'] ?? 0;
+        $approvedCount = $statusCounts['approved'] ?? 0;
+        $rejectedCount = $statusCounts['rejected'] ?? 0;
 
         return [
             Stat::make('Pending Approvals', $pendingCount)
