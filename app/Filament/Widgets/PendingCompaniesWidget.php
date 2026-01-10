@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\CompanyResource;
 use App\Models\Company;
 use Filament\Notifications\Notification;
 use Filament\Tables;
@@ -77,7 +78,7 @@ class PendingCompaniesWidget extends BaseWidget
                 Tables\Actions\Action::make('view')
                     ->label('View Full Details')
                     ->icon('heroicon-o-eye')
-                    ->url(fn(Company $record): string => "/admin/companies/{$record->id}/edit")
+                    ->url(fn(Company $record): string => CompanyResource::getUrl('edit', ['record' => $record]))
                     ->openUrlInNewTab(),
             ])
             ->emptyStateHeading('No Pending Approvals')
