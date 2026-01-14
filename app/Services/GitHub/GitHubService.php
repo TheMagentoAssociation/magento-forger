@@ -8,6 +8,9 @@ use App\Exceptions\GitHubGraphQLException;
 use DateTime;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ServerException;
 use Illuminate\Support\Facades\Log;
 use JsonException;
 use RuntimeException;
@@ -37,7 +40,7 @@ class GitHubService
         ]);
     }
 
-    private function executeGraphQLQuery(string $query, array $variables = []): ?array
+    private function executeGraphQLQuery(string $query, array $variables = [], array $options = []): ?array
     {
         $retryCount = 0;
 
@@ -48,13 +51,35 @@ class GitHubService
                         'query' => $query,
                         'variables' => $variables,
                     ],
+                    'timeout' => $options['timeout'] ?? 60,
+                    'connect_timeout' => $options['connect_timeout'] ?? 10,
                 ]);
-            } catch (\GuzzleHttp\Exception\ServerException $e) {
+            } catch (ConnectException $e) {
+                // Retry on network failures (connection refused, DNS issues, etc.)
+                if ($retryCount < $this->maxRetries) {
+                    $waitSeconds = (2 ** $retryCount) * 2; // Exponential backoff: 2s, 4s, 8s
+                    Log::warning("Network error: {$e->getMessage()}. Retrying in {$waitSeconds}s...");
+                    sleep($waitSeconds);
+                    $retryCount++;
+                    continue;
+                }
+                throw $e;
+            } catch (ServerException $e) {
                 // Retry on 502, 503, 504 errors
                 $statusCode = $e->getResponse()->getStatusCode();
-                if (in_array($statusCode, [502, 503, 504]) && $retryCount < $this->maxRetries) {
-                    $waitSeconds = pow(2, $retryCount) * 5; // Exponential backoff: 5s, 10s, 20s
+                if ($retryCount < $this->maxRetries && in_array($statusCode, [502, 503, 504])) {
+                    $waitSeconds = (2 ** $retryCount) * 2; // Exponential backoff: 2s, 4s, 8s
                     Log::warning("GitHub API returned $statusCode. Retrying in {$waitSeconds}s...");
+                    sleep($waitSeconds);
+                    $retryCount++;
+                    continue;
+                }
+                throw $e;
+            } catch (RequestException $e) {
+                // Retry on cURL errors with response (like cURL error 18: partial transfer)
+                if ($retryCount < $this->maxRetries) {
+                    $waitSeconds = (2 ** $retryCount) * 2; // Exponential backoff: 2s, 4s, 8s
+                    Log::warning("Request error: {$e->getMessage()}. Retrying in {$waitSeconds}s...");
                     sleep($waitSeconds);
                     $retryCount++;
                     continue;
@@ -112,7 +137,7 @@ class GitHubService
 
         $data = $this->executeGraphQLQuery($query, [
             'owner' => $owner,
-            'repo' => $repo,
+            'name' => $repo,
         ]);
 
         return IssueCounts::fromGraphQL($data);
@@ -124,7 +149,7 @@ class GitHubService
 
         $data = $this->executeGraphQLQuery($query, [
             'owner' => $owner,
-            'repo' => $repo,
+            'name' => $repo,
             'cursor' => $cursor,
         ]);
 
@@ -140,7 +165,7 @@ class GitHubService
 
         $data = $this->executeGraphQLQuery($query, [
             'owner' => $owner,
-            'repo' => $repo,
+            'name' => $repo,
         ]);
 
         return PullRequestCounts::fromGraphQL($data);
@@ -152,7 +177,7 @@ class GitHubService
 
         $data = $this->executeGraphQLQuery($query, [
             'owner' => $owner,
-            'repo' => $repo,
+            'name' => $repo,
             'cursor' => $cursor,
         ]);
 
@@ -272,7 +297,7 @@ class GitHubService
         $query = file_get_contents(resource_path('graphql/github/github_issues_with_interactions.graphql'));
         $variables = [
             'owner' => $owner,
-            'repo' => $repo,
+            'name' => $repo,
             'cursor' => $cursor,
         ];
 
@@ -348,15 +373,20 @@ class GitHubService
             'cursor' => $cursor,
         ];
 
-        $data = $this->executeGraphQLQuery($query, $variables);
+        // Use longer timeout for this complex query (large event payloads on later pages)
+        $data = $this->executeGraphQLQuery($query, $variables, [
+            'timeout' => 120,           // 2 minutes for large payloads
+            'connect_timeout' => 15,    // 15 seconds for connection
+        ]);
 
-        $issues = $data['repository']['issues']['nodes'] ?? [];
-        $pageInfo = $data['repository']['issues']['pageInfo'] ?? [];
+        $issues = $data['repository']['issues'] ?? [];
+        $rateLimit = $data['rateLimit'] ?? null;
 
         return [
-            'issues' => $issues,
-            'endCursor' => $pageInfo['endCursor'] ?? null,
-            'hasNextPage' => $pageInfo['hasNextPage'] ?? false,
+            'nodes' => $issues['nodes'] ?? [],
+            'pageInfo' => $issues['pageInfo'] ?? [],
+            'totalCount' => $issues['totalCount'] ?? 0,
+            'rateLimit' => $rateLimit,
         ];
     }
 
