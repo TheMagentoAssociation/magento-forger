@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,13 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('companies', function (Blueprint $table) {
+        Schema::table('companies', static function (Blueprint $table) {
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending')->after('name');
             $table->string('linkedin_url', 500)->nullable()->after('website');
         });
 
         // Set all existing companies to 'approved' status
-        \DB::table('companies')->update(['status' => 'approved']);
+        DB::table('companies')->update(['status' => 'approved']);
     }
 
     /**
