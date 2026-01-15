@@ -9,7 +9,7 @@ use Spatie\Menu\Laravel\Link;
 
 class MainMenu
 {
-    private const MENU_ROUTE_PATTERN = '/^(home|issues|prs|labels|employment)(-[\w]+)?$/';
+    private const MENU_ROUTE_PATTERN = '/^(home|issues|prs|labels|employment|leaderboard)(-[\w]+)?$/';
 
     public static function build(): Menu
     {
