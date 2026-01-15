@@ -116,7 +116,7 @@
         </div>
     @endif
     <div class="container mb-4">
-        <h3 class="">Add Employment History</h3>
+        <h3>Add Employment History</h3>
 
         @if(session('status'))
             <div class="alert alert-success" role="alert">
@@ -237,7 +237,7 @@
             <div class="row mb-3">
                 <label for="start_date" class="col-sm-2 col-form-label">Start Date</label>
                 <div class="col-sm-10">
-                    <input type="date" name="start_date" id="start_date" class="w-full border border-gray-300 rounded px-3 py-2" required>
+                    <input type="date" name="start_date" id="start_date" class="form-control" required>
                     @error('start_date')
                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                     @enderror
@@ -250,7 +250,7 @@
             <div class="row mb-3">
                 <label for="end_date" class="col-sm-2 col-form-label">End Date (optional)</label>
                 <div class="col-sm-10">
-                    <input type="date" name="end_date" id="end_date" class="w-full border border-gray-300 rounded px-3 py-2">
+                    <input type="date" name="end_date" id="end_date" class="form-control">
                     @error('end_date')
                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                     @enderror

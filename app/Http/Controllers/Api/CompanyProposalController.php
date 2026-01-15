@@ -160,8 +160,6 @@ class CompanyProposalController extends Controller
                 'state' => $state,
                 'zip' => $zip,
                 'country_code' => $countryCode,
-                'status' => 'pending',
-                'is_recommended' => true,
             ]);
 
             return response()->json([
