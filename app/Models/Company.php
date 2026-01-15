@@ -15,11 +15,11 @@ class Company extends Model
 {
     /**
      * The attributes that aren't mass assignable.
-     * These flags should only be set by admins through the Filament panel.
+     * The status attribute should only be set by admins through the Filament panel.
      *
      * @var list<string>
      */
-    protected $guarded = ['is_magento_member', 'is_recommended', 'status'];
+    protected $guarded = ['status'];
 
     /**
      * The model's default values for attributes.
