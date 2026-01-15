@@ -211,25 +211,30 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="country" class="form-label">
+                            <label for="country_code" class="form-label">
                                 Country
                             </label>
                             <select
-                                class="form-select @error('country') is-invalid @enderror"
-                                id="country"
-                                name="country"
+                                class="form-select @error('country_code') is-invalid @enderror"
+                                id="country_code"
+                                name="country_code"
                             >
                                 <option value="">Select a country</option>
-                                @foreach(collect(countries())->sortBy('name') as $country)
+                                @php
+                                    $sortedCountries = cache()->rememberForever('sorted_countries_by_name', function () {
+                                        return collect(countries())->sortBy('name');
+                                    });
+                                @endphp
+                                @foreach($sortedCountries as $country)
                                     <option
                                         value="{{ $country['iso_3166_1_alpha3'] }}"
-                                        @if(old('country', $company->country) === $country['iso_3166_1_alpha3']) selected @endif
+                                        @if(old('country_code', $company->country_code) === $country['iso_3166_1_alpha3']) selected @endif
                                     >
                                         {{ $country['name'] }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('country')
+                            @error('country_code')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

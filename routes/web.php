@@ -37,6 +37,15 @@ Route::post('/logout', function () {
     return redirect('/');
 })->name('logout');
 
+// Render employment form
+Route::middleware('auth')->group(function () {
+    Route::get('/employment', [Controllers\EmploymentController::class, 'create'])->name('employment');
+    Route::post('/employment', [Controllers\EmploymentController::class, 'store']);
+    Route::get('/employment/{id}/edit', [Controllers\EmploymentController::class, 'edit'])->name('employment.edit');
+    Route::put('/employment/{id}', [Controllers\EmploymentController::class, 'update'])->name('employment.update');
+    Route::delete('/employment/{id}', [Controllers\EmploymentController::class, 'destroy'])->name('employment.destroy');
+});
+
 Route::middleware('auth')->group(function () {
     // Company Owner Management
     Route::get('/my-companies', [Controllers\CompanyOwnerController::class, 'index'])->name('company-owner.index');

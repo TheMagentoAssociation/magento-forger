@@ -32,12 +32,12 @@
                                     </div>
 
                                     <div class="small text-muted mb-3">
-                                        <div><strong>Website:</strong> <a href="{{ $company->website }}" target="_blank">{{ $company->website }}</a></div>
+                                        <div><strong>Website:</strong> <a href="{{ $company->website }}" target="_blank" rel="noopener noreferrer">{{ $company->website }}</a></div>
                                         <div><strong>Email:</strong> {{ $company->email }}</div>
                                         <div><strong>Phone:</strong> {{ $company->phone }}</div>
-                                        <div><strong>Location:</strong> {{ $company->city }}, {{ $company->state }} {{ $company->zip }}</div>
+                                        <div><strong>Location:</strong> {{ $company->city }}, {{ $company->state }} {{ $company->zip }}@if($company->country), {{ $company->country }}@endif</div>
                                         @if($company->linkedin_url)
-                                            <div><strong>LinkedIn:</strong> <a href="{{ $company->linkedin_url }}" target="_blank">View Profile</a></div>
+                                            <div><strong>LinkedIn:</strong> <a href="{{ $company->linkedin_url }}" target="_blank" rel="noopener noreferrer">View Profile</a></div>
                                         @endif
                                     </div>
 

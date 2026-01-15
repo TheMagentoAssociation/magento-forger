@@ -10,6 +10,8 @@ class RouteLabelHelper
         'prs' => 'PRs',
         'company-owner.index' => 'My Companies',
         'company-owner.edit' => 'Edit Company',
+        'employment' => 'Employment',
+        'employment.edit' => 'Edit Employment',
     ];
 
     public static function formatLabel(string $routeName): string
