@@ -26,6 +26,7 @@
 
 @section('content')
     @php
+        use App\Helpers\CompanyHelper;
         $currentYear = date('Y');
         $currentMonth = date('m');
     @endphp
@@ -85,7 +86,7 @@
             @endphp
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm">
-                    <a href="{{ route('leaderboard-month', ['year' => $year]) }}" class="text-decoration-none">
+                    <a href="{{ route('leaderboard-year', ['year' => $year]) }}" class="text-decoration-none">
                         <div class="card-header bg-white border-bottom leaderboard-year-header">
                             <h5 class="card-title mb-0 fw-bold text-dark d-flex justify-content-between align-items-center">
                                 <span>{{ $year }}</span>
@@ -102,7 +103,7 @@
                                 @endphp
                             @endif
                             @if($company['name'] !== 'unclaimed by company')
-                                <li class="list-group-item d-flex justify-content-between align-items-center {{ $company['name'] === 'Adobe' ? 'bg-danger-subtle' : '' }} {{ $companyIndex >= $maxVisible ? 'collapse-item d-none' : '' }}" data-year="{{ $year }}">
+                                <li class="list-group-item d-flex justify-content-between align-items-center {{ CompanyHelper::getCompanyRowClass($company['name']) }} {{ $companyIndex >= $maxVisible ? 'collapse-item d-none' : '' }}" data-year="{{ $year }}">
                                     <span class="fw-medium">{{ $company['name'] }}</span>
                                     <span class="badge text-bg-success rounded-pill">{{ number_format($company['points']) }}</span>
                                 </li>

@@ -11,7 +11,7 @@ Route::get('prsByMonth', [Controllers\PrsByMonthController::class, 'index'])->na
 Route::get('labels/allLabels', [Controllers\LabelController::class, 'listAllLabels'])->name('labels-listAllLabels');
 Route::get('labels/prsMissingComponent', [Controllers\LabelController::class, 'listPrWithoutComponentLabel'])->name('labels-PRsWithoutComponentLabel');
 Route::get('leaderboard', [Controllers\LeaderboardController::class, 'index'])->name('leaderboard');
-Route::get('leaderboard/{year}', [Controllers\LeaderboardController::class, 'showMonth'])->where('year', '[0-9]+')->name('leaderboard-month');
+Route::get('leaderboard/{year}', [Controllers\LeaderboardController::class, 'showYear'])->where('year', '[0-9]+')->name('leaderboard-year');
 Route::get('/api/charts/{method}', [Controllers\ChartController::class, 'dispatch']);
 Route::get('/api/universe-bar', [Controllers\UniverseBarController::class, 'render']);
 
