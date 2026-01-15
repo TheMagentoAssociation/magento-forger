@@ -121,7 +121,7 @@ class GitHubStats extends BaseWidget
             ]
         ];
 
-        
+
         $data = $client->search(OpenSearchService::getIndexWithPrefix('points'), $params);
 
         $claimed = $data['aggregations']['claimed_users']['unique_real_names']['value'];

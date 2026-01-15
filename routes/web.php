@@ -11,7 +11,7 @@ Route::get('prsByMonth', [Controllers\PrsByMonthController::class, 'index'])->na
 Route::get('labels/allLabels', [Controllers\LabelController::class, 'listAllLabels'])->name('labels-listAllLabels');
 Route::get('labels/prsMissingComponent', [Controllers\LabelController::class, 'listPrWithoutComponentLabel'])->name('labels-PRsWithoutComponentLabel');
 Route::get('leaderboard', [Controllers\LeaderboardController::class, 'index'])->name('leaderboard');
-Route::get('leaderboard/{year}', [Controllers\LeaderboardController::class, 'showMonth'])->where('year', '[0-9]+')->name('leaderboard-month');
+Route::get('leaderboard/{year}', [Controllers\LeaderboardController::class, 'showYear'])->where('year', '[0-9]+')->name('leaderboard-year');
 Route::get('/api/charts/{method}', [Controllers\ChartController::class, 'dispatch']);
 Route::get('/api/universe-bar', [Controllers\UniverseBarController::class, 'render']);
 
@@ -46,9 +46,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/employment/{id}/edit', [Controllers\EmploymentController::class, 'edit'])->name('employment.edit');
     Route::put('/employment/{id}', [Controllers\EmploymentController::class, 'update'])->name('employment.update');
     Route::delete('/employment/{id}', [Controllers\EmploymentController::class, 'destroy'])->name('employment.destroy');
+});
 
+// Authenticated routes
+Route::middleware('auth')->group(function () {
     // Company Owner Management
     Route::get('/my-companies', [Controllers\CompanyOwnerController::class, 'index'])->name('company-owner.index');
     Route::get('/my-companies/{id}/edit', [Controllers\CompanyOwnerController::class, 'edit'])->name('company-owner.edit');
     Route::put('/my-companies/{id}', [Controllers\CompanyOwnerController::class, 'update'])->name('company-owner.update');
+    Route::post('/api/companies/propose', [Controllers\Api\CompanyProposalController::class, 'propose'])
+        ->middleware('throttle:30,60'); // 30 submissions per hour per user
 });

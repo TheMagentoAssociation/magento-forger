@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CompanyProposalController extends Controller
 {
@@ -31,6 +33,7 @@ class CompanyProposalController extends Controller
             'city' => ['nullable', 'string', 'max:100'],
             'state' => ['nullable', 'string', 'max:100'],
             'zip' => ['nullable', 'string', 'max:20'],
+            'country_code' => ['nullable', 'string', 'max:3'],
         ], [
             'name.regex' => 'Company name contains invalid characters.',
             'linkedin_url.regex' => 'Please provide a valid LinkedIn company page URL.',
@@ -142,6 +145,9 @@ class CompanyProposalController extends Controller
         $providedZip = trim($request->input('zip', ''));
         $zip = ! empty($providedZip) ? strip_tags($providedZip) : '00000';
 
+        $providedCountryCode = trim($request->input('country_code', ''));
+        $countryCode = ! empty($providedCountryCode) ? strip_tags($providedCountryCode) : null;
+
         // Create pending company
         try {
             $company = Company::create([
@@ -154,8 +160,7 @@ class CompanyProposalController extends Controller
                 'city' => $city,
                 'state' => $state,
                 'zip' => $zip,
-                'status' => 'pending',
-                'is_recommended' => true,
+                'country_code' => $countryCode,
             ]);
 
             return response()->json([
@@ -166,9 +171,9 @@ class CompanyProposalController extends Controller
                     'status' => $company->status,
                 ],
             ]);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             // Log the actual error for debugging
-            \Log::error('Company proposal failed', [
+            Log::error('Company proposal failed', [
                 'error' => $e->getMessage(),
                 'company_name' => $companyName,
             ]);

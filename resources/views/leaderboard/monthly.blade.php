@@ -2,20 +2,10 @@
 
 @section('content')
     @php
-        $monthNames = [
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December'
-        ];
+        $monthNames = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $monthNames[$m] = \Carbon\Carbon::createFromDate(null, $m, 1)->translatedFormat('F');
+        }
     @endphp
     <div class="container">
         <div class="row mb-3">

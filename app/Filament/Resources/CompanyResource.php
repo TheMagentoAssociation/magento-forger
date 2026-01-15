@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class CompanyResource extends Resource
 {
@@ -40,14 +41,15 @@ class CompanyResource extends Resource
                     ->helperText('Validating the LinkedIn URL speeds up approval'),
 
                 Forms\Components\TextInput::make('email')->required()->unique(ignoreRecord: true),
-                Forms\Components\TextInput::make('website')->required()->unique(ignoreRecord: true),
+                Forms\Components\TextInput::make('website')->required()->unique(ignoreRecord: true)->url(),
                 Forms\Components\TextInput::make('phone')->required(),
                 Forms\Components\TextInput::make('address')->required(),
                 Forms\Components\TextInput::make('zip')->required(),
                 Forms\Components\TextInput::make('city')->required(),
                 Forms\Components\TextInput::make('state'),
 
-                Forms\Components\Select::make('country')
+                Forms\Components\Select::make('country_code')
+                    ->label('Country')
                     ->options(
                         collect(countries())
                             ->mapWithKeys(fn($country) => [
@@ -65,7 +67,7 @@ class CompanyResource extends Resource
                     ->label('Recommended by Users'),
 
                 Forms\Components\FileUpload::make('logo')
-                ->acceptedFileTypes(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
+                    ->acceptedFileTypes(['image/png', 'image/jpg', 'image/jpeg', 'image/gif'])
             ]);
     }
 
@@ -75,12 +77,13 @@ class CompanyResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'approved',
-                        'danger' => 'rejected',
-                    ]),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                    }),
 
                 Tables\Columns\IconColumn::make('is_magento_member')
                     ->boolean()
@@ -134,27 +137,40 @@ class CompanyResource extends Resource
 
                 Tables\Actions\Action::make('merge')
                     ->icon('heroicon-o-arrow-path')
+                    ->tooltip('Merge this company into another approved company')
                     ->form([
                         Forms\Components\Select::make('target_company_id')
                             ->label('Merge into Company')
-                            ->options(Company::where('status', 'approved')->pluck('name', 'id'))
+                            ->options(fn(Company $record) =>
+                            Company::where('status', 'approved')
+                                ->whereNot('id', $record->id)
+                                ->pluck('name', 'id')
+                            )
                             ->searchable()
                             ->required(),
                     ])
                     ->action(function (Company $record, array $data): void {
-                        $targetCompany = Company::find($data['target_company_id']);
+                        $targetCompanyId = $data['target_company_id'];
 
-                        // Transfer all affiliations
-                        $record->affiliations()->update(['company_id' => $targetCompany->id]);
+                        // Get user IDs that already have company_affiliations with target company
+                        $existingUserIds = DB::table('company_affiliations')
+                            ->where('company_id', $targetCompanyId)
+                            ->pluck('user_id');
 
-                        // Mark as rejected (using direct assignment since status is guarded)
-                        $record->status = 'rejected';
-                        $record->save();
+                        // Delete affiliations that would create duplicates
+                        $record->affiliations()
+                            ->whereIn('user_id', $existingUserIds)
+                            ->delete();
+
+                        // Move remaining affiliations to target company
+                        $record->affiliations()->update(['company_id' => $targetCompanyId]);
+
+                        $record->update(['status' => 'rejected']);
 
                         Notification::make()
                             ->success()
                             ->title('Company merged')
-                            ->body("{$record->name} merged into {$targetCompany->name}")
+                            ->body("{$record->name} merged into " . Company::find($targetCompanyId)->name)
                             ->send();
                     }),
 

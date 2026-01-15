@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\RelationManagers;
 
+use App\Filament\Resources\CompanyResource;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -34,16 +35,36 @@ class CompaniesRelationManager extends RelationManager
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
-                    ->url(fn($record) => route('filament.admin.resources.companies.edit', ['record' => $record->id]))
+                    ->url(fn($record) => CompanyResource::getUrl('edit', ['record' => $record]))
                     ->color('primary'),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'approved',
-                        'danger' => 'rejected',
-                    ]),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        default => 'secondary',
+                    }),
                 Tables\Columns\TextColumn::make('website')
-                    ->url(fn($record) => $record->website)
+                    ->url(function ($record) {
+                        $url = $record->website ?? null;
+
+                        if (! is_string($url) || $url === '') {
+                            return null;
+                        }
+
+                        $validatedUrl = filter_var($url, FILTER_VALIDATE_URL);
+                        if ($validatedUrl === false) {
+                            return null;
+                        }
+
+                        $scheme = parse_url($validatedUrl, PHP_URL_SCHEME);
+                        if (! in_array(strtolower((string) $scheme), ['http', 'https'], true)) {
+                            return null;
+                        }
+
+                        return $validatedUrl;
+                    })
                     ->openUrlInNewTab(),
                 Tables\Columns\TextColumn::make('city'),
                 Tables\Columns\IconColumn::make('is_magento_member')

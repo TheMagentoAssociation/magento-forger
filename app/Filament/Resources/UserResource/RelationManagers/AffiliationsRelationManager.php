@@ -25,7 +25,8 @@ class AffiliationsRelationManager extends RelationManager
                     ->format('Y-m-d')
                     ->required(),
                 Forms\Components\DatePicker::make('end_date')
-                    ->format('Y-m-d'),
+                    ->format('Y-m-d')
+                    ->rules(['nullable', 'after_or_equal:start_date']),
             ]);
     }
 
@@ -34,9 +35,14 @@ class AffiliationsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('jobs')
             ->columns([
-                Tables\Columns\TextColumn::make('company.name'),
-                Tables\Columns\TextColumn::make('start_date'),
-                Tables\Columns\TextColumn::make('end_date'),
+                Tables\Columns\TextColumn::make('company.name')
+                    ->label('Company Name'),
+                Tables\Columns\TextColumn::make('start_date')
+                    ->label('Start Date')
+                    ->date('Y-m-d'),
+                Tables\Columns\TextColumn::make('end_date')
+                    ->label('End Date')
+                    ->date('Y-m-d'),
             ])
             ->filters([
                 //

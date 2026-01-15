@@ -9,7 +9,7 @@ use OpenSearch\Client;
 
 class LeaderboardController extends Controller
 {
-    public function index(Client $client): view
+    public function index(Client $client): View
     {
         $params = [
             'index' => OpenSearchService::getIndexWithPrefix('points'),
@@ -31,7 +31,10 @@ class LeaderboardController extends Controller
                             'by_company' => [
                                 'terms' => [
                                     'field' => 'company_name.keyword',
-                                    'size'  => 1000
+                                    'size'  => 1000,
+                                    'order' => [
+                                        'total_points' => 'desc'
+                                    ]
                                 ],
                                 'aggs' => [
                                     'total_points' => [
@@ -64,7 +67,7 @@ class LeaderboardController extends Controller
         return view('leaderboard/leaderboard', ['data' => $dataToDisplay]);
     }
 
-    public function showMonth(Client $client, int $year): view
+    public function showYear(Client $client, int $year): View
     {
         $params = [
             'index' => OpenSearchService::getIndexWithPrefix('points'),
@@ -101,7 +104,10 @@ class LeaderboardController extends Controller
                             'by_company' => [
                                 'terms' => [
                                     'field' => 'company_name.keyword',
-                                    'size'  => 1000
+                                    'size'  => 1000,
+                                    'order' => [
+                                        'total_points' => 'desc'
+                                    ]
                                 ],
                                 'aggs' => [
                                     'total_points' => [
