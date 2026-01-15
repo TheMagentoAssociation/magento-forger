@@ -116,7 +116,7 @@
         </div>
     @endif
     <div class="container mb-4">
-        <h3 class="">Add Employment History</h3>
+        <h3>Add Employment History</h3>
 
         @if(session('status'))
             <div class="alert alert-success" role="alert">
@@ -214,6 +214,16 @@
                             </div>
                         </div>
 
+                        <div class="mb-3">
+                            <label>Country</label>
+                            <select id="proposed_company_country_code" class="form-control">
+                                <option value="">Select a country</option>
+                                @foreach(collect(countries())->sortBy('name') as $country)
+                                    <option value="{{ $country['iso_3166_1_alpha3'] }}">{{ $country['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <button type="button" id="submit-proposed-company" class="btn btn-sm btn-success">
                             Submit for Approval
                         </button>
@@ -227,7 +237,7 @@
             <div class="row mb-3">
                 <label for="start_date" class="col-sm-2 col-form-label">Start Date</label>
                 <div class="col-sm-10">
-                    <input type="date" name="start_date" id="start_date" class="w-full border border-gray-300 rounded px-3 py-2" required>
+                    <input type="date" name="start_date" id="start_date" class="form-control" required>
                     @error('start_date')
                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                     @enderror
@@ -240,7 +250,7 @@
             <div class="row mb-3">
                 <label for="end_date" class="col-sm-2 col-form-label">End Date (optional)</label>
                 <div class="col-sm-10">
-                    <input type="date" name="end_date" id="end_date" class="w-full border border-gray-300 rounded px-3 py-2">
+                    <input type="date" name="end_date" id="end_date" class="form-control">
                     @error('end_date')
                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                     @enderror
@@ -314,6 +324,7 @@ function clearProposeForm() {
     document.getElementById('proposed_company_city').value = '';
     document.getElementById('proposed_company_state').value = '';
     document.getElementById('proposed_company_zip').value = '';
+    document.getElementById('proposed_company_country_code').value = '';
 }
 
 // Hide propose company form
@@ -333,6 +344,7 @@ document.getElementById('submit-proposed-company').addEventListener('click', fun
     const city = document.getElementById('proposed_company_city').value.trim();
     const state = document.getElementById('proposed_company_state').value.trim();
     const zip = document.getElementById('proposed_company_zip').value.trim();
+    const countryCode = document.getElementById('proposed_company_country_code').value.trim();
 
     if (!name) {
         showModal('Validation Error', 'Please enter a company name', 'error');
@@ -355,7 +367,8 @@ document.getElementById('submit-proposed-company').addEventListener('click', fun
             address: address,
             city: city,
             state: state,
-            zip: zip
+            zip: zip,
+            country_code: countryCode
         })
     })
     .then(response => response.json())
