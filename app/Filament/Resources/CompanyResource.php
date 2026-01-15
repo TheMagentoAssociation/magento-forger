@@ -41,7 +41,7 @@ class CompanyResource extends Resource
                     ->helperText('Validating the LinkedIn URL speeds up approval'),
 
                 Forms\Components\TextInput::make('email')->required()->unique(ignoreRecord: true),
-                Forms\Components\TextInput::make('website')->required()->unique(ignoreRecord: true),
+                Forms\Components\TextInput::make('website')->required()->unique(ignoreRecord: true)->url(),
                 Forms\Components\TextInput::make('phone')->required(),
                 Forms\Components\TextInput::make('address')->required(),
                 Forms\Components\TextInput::make('zip')->required(),
@@ -137,6 +137,7 @@ class CompanyResource extends Resource
 
                 Tables\Actions\Action::make('merge')
                     ->icon('heroicon-o-arrow-path')
+                    ->tooltip('Merge this company into another approved company')
                     ->form([
                         Forms\Components\Select::make('target_company_id')
                             ->label('Merge into Company')
