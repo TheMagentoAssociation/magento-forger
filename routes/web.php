@@ -44,5 +44,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/employment/{id}/edit', [Controllers\EmploymentController::class, 'edit'])->name('employment.edit');
     Route::put('/employment/{id}', [Controllers\EmploymentController::class, 'update'])->name('employment.update');
     Route::delete('/employment/{id}', [Controllers\EmploymentController::class, 'destroy'])->name('employment.destroy');
-
 });
