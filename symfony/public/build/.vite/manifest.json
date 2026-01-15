@@ -1,0 +1,11 @@
+{
+  "assets/app.js": {
+    "file": "assets/app-C97D00hl.js",
+    "name": "app",
+    "src": "assets/app.js",
+    "isEntry": true,
+    "css": [
+      "assets/app-CPgifETp.css"
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+query($owner: String!, $repo: String!, $cursor: String) {
+  rateLimit {
+    remaining
+    resetAt
+  }
+  repository(owner: $owner, name: $repo) {
+    pullRequests(first: 100, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        id
+        number
+        title
+        url
+        state
+        isDraft
+        createdAt
+        updatedAt
+        mergedAt
+        closedAt
+        author {
+          login
+        }
+        comments {
+          totalCount
+        }
+        reviews {
+          totalCount
+        }
+        labels (first: 10) {
+          nodes {
+            name
+          }
+        }
+      }
+    }
+  }
+}

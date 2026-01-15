@@ -1,0 +1,16 @@
+query($owner: String!, $repo: String!) {
+    repository(owner: $owner, name: $repo) {
+        pullRequests {
+            totalCount
+        }
+        openPullRequests: pullRequests(states: OPEN) {
+            totalCount
+        }
+        mergedPullRequests: pullRequests(states: MERGED) {
+            totalCount
+        }
+        closedPullRequests: pullRequests(states: CLOSED) {
+            totalCount
+        }
+    }
+}

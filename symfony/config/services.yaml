@@ -1,0 +1,80 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    # GitHub Configuration
+    github.repo: '%env(GITHUB_REPO)%'
+    github.token: '%env(GITHUB_TOKEN)%'
+
+    # OpenSearch Configuration
+    opensearch.host: '%env(OPENSEARCH_HOST)%'
+    opensearch.port: '%env(int:OPENSEARCH_PORT)%'
+    opensearch.username: '%env(OPENSEARCH_USERNAME)%'
+    opensearch.password: '%env(OPENSEARCH_PASSWORD)%'
+    opensearch.tls: '%env(bool:OPENSEARCH_TLS)%'
+    opensearch.verify_tls: '%env(bool:OPENSEARCH_VERIFY_TLS)%'
+    opensearch.index_prefix: '%env(OPENSEARCH_INDEX_PREFIX)%'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # OpenSearch Client Factory
+    App\Factory\OpenSearchClientFactory:
+        arguments:
+            $host: '%opensearch.host%'
+            $port: '%opensearch.port%'
+            $username: '%opensearch.username%'
+            $password: '%opensearch.password%'
+            $useTls: '%opensearch.tls%'
+            $verifyTls: '%opensearch.verify_tls%'
+
+    # OpenSearch Client
+    OpenSearch\Client:
+        factory: ['@App\Factory\OpenSearchClientFactory', 'create']
+
+    # GitHub Service
+    App\Service\GitHub\GitHubService:
+        arguments:
+            $token: '%github.token%'
+            $projectDir: '%kernel.project_dir%'
+
+    # OpenSearch Service
+    App\Service\Search\OpenSearchService:
+        arguments:
+            $indexPrefix: '%opensearch.index_prefix%'
+
+    # Commands with GitHub repo parameter
+    App\Command\SyncGitHubPRsCommand:
+        arguments:
+            $githubRepo: '%github.repo%'
+
+    App\Command\SyncGitHubIssuesCommand:
+        arguments:
+            $githubRepo: '%github.repo%'
+
+    App\Command\SyncGitHubEventsCommand:
+        arguments:
+            $githubRepo: '%github.repo%'
+
+    App\Command\SyncGitHubInteractionsCommand:
+        arguments:
+            $githubRepo: '%github.repo%'
+
+    # Menu Builder
+    App\Menu\MenuBuilder:
+        tags:
+            - { name: knp_menu.menu_builder, method: createMainMenu, alias: main }

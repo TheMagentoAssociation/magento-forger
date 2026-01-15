@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token('main') }}">
+    <title>{% block title %}{{ title|default('Magento Forger') }}{% endblock %}</title>
+    <meta name="description" content="Magento 2 PR & Issue Statistics Viewer">
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
+    {{ vite_entry_link_tags('app') }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col">
+{% include 'components/_universe_bar.html.twig' %}
+<nav class="navbar navbar-expand-lg navbar-dark" data-bs-theme="dark" style="background-color: #f26322;">
+    <div class="container">
+        <a class="navbar-brand fs-5 d-flex align-items-center" href="{{ path('home') }}">
+            <img src="{{ asset('assets/logo_magento_soul_white.svg') }}" alt="Logo" width="32" height="32" class="me-2">
+            <span><span class="fw-light">Magento Open Source</span> Forger</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link{% if app.request.pathInfo == '/' %} active{% endif %}" href="{{ path('home') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if app.request.pathInfo == '/prsByMonth' %} active{% endif %}" href="{{ path('prs-PRsByMonth') }}">PRs by Month</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if app.request.pathInfo == '/issuesByMonth' %} active{% endif %}" href="{{ path('issues-issuesByMonth') }}">Issues by Month</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Labels</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ path('labels-listAllLabels') }}">All Labels</a></li>
+                        <li><a class="dropdown-item" href="{{ path('labels-PRsWithoutComponentLabel') }}">PRs Missing Component</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="navbar-nav ms-auto">
+                <hr class="d-lg-none text-white my-2">
+
+                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <div class="nav-item text-center text-lg-start mb-2 mb-lg-0 me-lg-3">
+                        <span class="navbar-text text-white" title="{{ app.user.name }} ({{ app.user.githubUsername }})">
+                            <span class="d-none d-lg-inline text-truncate d-inline-block" style="max-width: 250px;">
+                                {{ app.user.name }} ({{ app.user.githubUsername }})
+                            </span>
+                            <span class="d-lg-none">
+                                {{ app.user.name }}<br>
+                                <small class="text-white-50">({{ app.user.githubUsername }})</small>
+                            </span>
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-center justify-content-lg-start gap-2 flex-wrap">
+                        {% if app.user.isAdmin %}
+                            <a href="{{ path('admin') }}" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-cog"></i> Admin
+                            </a>
+                        {% endif %}
+
+                        <a href="{{ path('app_logout') }}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="nav-item text-center text-lg-start">
+                        <a href="{{ path('connect_github_start') }}" class="btn btn-sm btn-outline-light">
+                            <i class="fab fa-github"></i> Login with GitHub
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+{% include 'components/_header.html.twig' %}
+
+<main role="main" class="flex-grow container mx-auto pt-4 px-3 px-md-4 pb-4 transition-all duration-300 ease-in-out mb-4">
+    {% block content %}{% endblock %}
+</main>
+
+{% include 'components/_footer.html.twig' %}
+
+{{ vite_entry_script_tags('app') }}
+{% block javascripts %}{% endblock %}
+</body>
+</html>
