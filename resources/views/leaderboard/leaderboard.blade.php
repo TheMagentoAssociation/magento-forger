@@ -137,6 +137,9 @@
 function toggleYearGroup(year) {
     const button = document.querySelector(`.expand-btn[data-year="${year}"]`);
     const hiddenItems = document.querySelectorAll(`.collapse-item[data-year="${year}"]`);
+    if (!hiddenItems.length) {
+        return;
+    }
     const isExpanded = !hiddenItems[0].classList.contains('d-none');
 
     hiddenItems.forEach(item => {
