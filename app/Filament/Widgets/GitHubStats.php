@@ -43,7 +43,9 @@ class GitHubStats extends BaseWidget
                     ->description('Total Users Unclaimed'),
                 Stat::make('Percent claimed', number_format($openSearchStats['percentClaimed'], 5) . '%'),
                 Stat::make('Companies', (new Company)->count())->description('Companies registered on Forger'),
-                Stat::make('Users', (new User)->count())->description('Users registered on Forger')
+                Stat::make('Users', (new User)->count())->description('Users registered on Forger'),
+                Stat::make('Total GitHub Users', number_format($openSearchStats['claimed_users'] + $openSearchStats['unclaimed_users']))
+                    ->description('Total unique contributors'),
             ];
         } catch (\Throwable $e) {
             // Check if it's an index not found error
@@ -55,8 +57,14 @@ class GitHubStats extends BaseWidget
                         ->color('danger')
                         ->description('Run: php artisan opensearch:process-interactions')
                         ->descriptionIcon('heroicon-m-exclamation-triangle'),
+                    Stat::make('Total Users unclaimed', '—')
+                        ->color('gray')
+                        ->description('Data unavailable'),
+                    Stat::make('Percent claimed', '—'),
                     Stat::make('Companies', (new Company)->count())->description('Companies registered on Forger'),
-                    Stat::make('Users', (new User)->count())->description('Users registered on Forger')
+                    Stat::make('Users', (new User)->count())->description('Users registered on Forger'),
+                    Stat::make('Total GitHub Users', '—')
+                        ->description('Data unavailable'),
                 ];
             }
 
