@@ -197,6 +197,27 @@ class ScoreLeaderboardControllerTest extends TestCase
             ->assertSee('10 base × 2× priority × 0.55× recency = 11 pts');
     }
 
+    public function testDetailShowsNeutralFactorWordingForIssueOpened(): void
+    {
+        // issue_opened folds priority + confirmed bonus into the factor, so the
+        // tooltip must say "impact", not "priority". Base 1, flat 3 → 3x impact.
+        LeaderboardLineItem::create([
+            'login' => 'jane',
+            'board' => 'contributor',
+            'action' => 'issue_opened',
+            'title' => 'Report the thing',
+            'url' => 'https://github.com/magento/magento2/issues/456',
+            'contributed_at' => now(),
+            'points' => 3.0,
+            'points_flat' => 3.0,
+            'computed_at' => now(),
+        ]);
+
+        $this->get(route('leaderboard.detail', ['board' => 'contributor', 'login' => 'jane']))
+            ->assertOk()
+            ->assertSee('1 base × 3× impact = 3 pts');
+    }
+
     public function testDetailOmitsTooltipWhenPointsCannotBeDecomposed(): void
     {
         // No flat points persisted (legacy row) → nothing to decompose, no tooltip.

@@ -346,7 +346,9 @@ class ScoreLeaderboardController extends Controller
         $parts = [$this->trimNumber($base).' base'];
 
         if (abs($priorityFactor - 1.0) >= 0.05) {
-            $parts[] = '× '.$this->trimNumber(round($priorityFactor, 1)).'× priority';
+            // issue_opened folds in the confirmed-label bonus, so it's not purely priority.
+            $factorLabel = $item->action === Action::ISSUE_OPENED->value ? 'impact' : 'priority';
+            $parts[] = '× '.$this->trimNumber(round($priorityFactor, 1)).'× '.$factorLabel;
         }
 
         if (abs($recency - 1.0) >= 0.05) {
