@@ -18,7 +18,7 @@ return [
      * Bump when weights change so a recompute can be triggered. Stored alongside
      * computed rows is not required yet, but keep this authoritative.
      */
-    'version' => 1,
+    'version' => 7,
 
     /*
      * The label Adobe applies when a PR enters the review pool. Time a PR spends
@@ -44,27 +44,43 @@ return [
     'weights' => [
         'contributor' => [
             'issue_opened' => 1,
-            'pr_opened' => 3,
-            'pr_merged' => 10,             // author bonus, multiplied by impact
-            'issue_resolved_by_merge' => 4,
+            'pr_opened' => 2,               // PR: encourage contributing; merging is out of the contributor's control
+            'pr_merged' => 10,              // PR only: author bonus, multiplied by impact
+            'issue_resolved_by_merge' => 4, // Issue
         ],
         'maintainer' => [
             'review_approved' => 3,
             'review_rejected' => 3,
             'review_commented' => 1,
             'approved_then_merged' => 6,   // bonus, multiplied by impact, when an approved PR merges
-            'pr_claimed' => 2,             // bonus, multiplied by staleness, for self-assigning a pending-review PR
+            'pr_claimed' => 2,             // flat bonus for self-assigning (and then reviewing) a pending-review PR
             'label_applied' => 1,          // triage: applying a label (deduped per actor/target/label)
+            // todo: put back the old PR?
         ],
     ],
 
     /*
-     * Impact weight bounds. Applied to merge bonuses, scaled by PR size
-     * (additions + deletions). See LeaderboardScorer::impactFromSize().
+     * Impact weight from priority labels — NOT lines of code. Every issue/PR
+     * event is scaled by its highest "Priority: Px" label (1.0 when unlabeled,
+     * so unprioritised work still earns its base). Issues additionally carrying
+     * the confirmed label get an additive bonus, but only on issue_opened (it
+     * rewards filing a bug a maintainer later confirmed). The resulting factor is
+     * clamped to [min, max]. Priority labels are applied by maintainers, so a
+     * contributor can't self-inflate their own multiplier.
+     * See LeaderboardScorer::impactFromLabels().
      */
     'impact' => [
         'min' => 1.0,
-        'max' => 5.0,
+        'max' => 5.5, // P0 (3.5) + confirmed (2.0) is the true ceiling
+        'priority' => [
+            'Priority: P0' => 3.5,
+            'Priority: P1' => 3.0,
+            'Priority: P2' => 2.5,
+            'Priority: P3' => 2.0,
+            'Priority: P4' => 1.5,
+        ],
+        'confirmed_label' => 'Issue: Confirmed',
+        'confirmed_bonus' => 2.0,
     ],
 
     /*
